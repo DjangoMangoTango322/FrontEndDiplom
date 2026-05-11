@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+    --paper: #f4eadf;
+    --paper-soft: #fff8ef;
+    --ink: #15110f;
+    --muted: #766a60;
+    --line: #15110f;
+    --coral: #f05a3b;
+    --sun: #f4c84b;
+    --mint: #9ed8c3;
+    --blue: #2e5f8f;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    background:
+        linear-gradient(rgba(21, 17, 15, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 17, 15, 0.035) 1px, transparent 1px),
+        var(--paper);
+    background-size: 36px 36px;
+    color: var(--ink);
+    font-family: "Space Grotesk", Inter, system-ui, sans-serif;
+    font-feature-settings: "ss01" on, "tnum" on;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
+* {
+    box-sizing: border-box;
+    selection-color: var(--ink);
+    selection-background: var(--sun);
+}
+
+#root {
+    min-height: 100vh;
+}
+
+.display-font {
+    font-family: "Archivo Black", "Space Grotesk", system-ui, sans-serif;
+    letter-spacing: -0.03em;
+}
+
+.poster-border {
+    border: 2px solid var(--line);
+    box-shadow: 7px 7px 0 var(--line);
+}
+
+.poster-border-sm {
+    border: 2px solid var(--line);
+    box-shadow: 4px 4px 0 var(--line);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
