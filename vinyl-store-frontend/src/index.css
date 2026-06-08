@@ -19,6 +19,7 @@ html {
 body {
     margin: 0;
     min-width: 320px;
+    overflow-x: hidden;
     background:
         linear-gradient(rgba(21, 17, 15, 0.035) 1px, transparent 1px),
         linear-gradient(90deg, rgba(21, 17, 15, 0.035) 1px, transparent 1px),
@@ -54,6 +55,220 @@ button:disabled {
 
 #root {
     min-height: 100vh;
+}
+
+.vinyl-aura {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(20px);
+    opacity: 0.72;
+}
+
+.vinyl-aura--sun {
+    left: -8rem;
+    top: -10rem;
+    width: 28rem;
+    height: 28rem;
+    background: radial-gradient(circle, rgba(244, 200, 75, 0.28) 0%, rgba(244, 200, 75, 0.12) 42%, transparent 74%);
+}
+
+.vinyl-aura--mint {
+    right: -12rem;
+    top: 24%;
+    width: 34rem;
+    height: 34rem;
+    background: radial-gradient(circle, rgba(158, 216, 195, 0.22) 0%, rgba(158, 216, 195, 0.08) 44%, transparent 74%);
+}
+
+.vinyl-aura--coral {
+    right: -10rem;
+    bottom: -8rem;
+    width: 30rem;
+    height: 30rem;
+    background: radial-gradient(circle, rgba(240, 90, 59, 0.18) 0%, rgba(240, 90, 59, 0.06) 42%, transparent 74%);
+}
+
+.vinyl-disc-shell {
+    position: absolute;
+    aspect-ratio: 1;
+}
+
+.vinyl-disc-shell--top-right {
+    top: 4rem;
+    right: -11rem;
+    width: clamp(20rem, 31vw, 34rem);
+    transform: rotate(-18deg);
+    opacity: 0.34;
+}
+
+.vinyl-disc-shell--left-mid {
+    top: 26rem;
+    left: -10rem;
+    width: clamp(16rem, 25vw, 26rem);
+    transform: rotate(12deg);
+    opacity: 0.28;
+}
+
+.vinyl-disc-shell--bottom-right {
+    right: -14rem;
+    bottom: 7rem;
+    width: clamp(22rem, 35vw, 38rem);
+    transform: rotate(8deg);
+    opacity: 0.24;
+}
+
+.vinyl-disc-shell--top-left {
+    top: 6.5rem;
+    left: 8%;
+    width: clamp(11rem, 16vw, 16rem);
+    transform: rotate(-24deg);
+    opacity: 0.18;
+}
+
+.vinyl-disc {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    border: 1px solid rgba(21, 17, 15, 0.08);
+    background:
+        radial-gradient(circle at center, rgba(244, 248, 255, 0.92) 0 0.8%, transparent 1.05%),
+        radial-gradient(circle at center, var(--vinyl-label) 0 11%, rgba(21, 17, 15, 0.76) 11.8% 15%, transparent 15.5%),
+        radial-gradient(circle at 28% 26%, rgba(255, 255, 255, 0.38) 0 9%, transparent 23%),
+        repeating-radial-gradient(
+            circle at center,
+            rgba(255, 255, 255, 0.16) 0 2px,
+            rgba(255, 255, 255, 0.03) 2px 9px,
+            rgba(0, 0, 0, 0.14) 9px 11px,
+            rgba(0, 0, 0, 0.03) 11px 20px
+        ),
+        linear-gradient(155deg, rgba(255, 255, 255, 0.18) 0%, rgba(36, 33, 31, 0.86) 42%, rgba(7, 7, 7, 0.98) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 24px 44px rgba(21, 17, 15, 0.12);
+    animation: vinyl-spin 54s linear infinite;
+}
+
+.vinyl-disc::after {
+    content: "";
+    position: absolute;
+    inset: 6%;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vinyl-disc--gold {
+    --vinyl-label: rgba(244, 200, 75, 0.92);
+}
+
+.vinyl-disc--blue {
+    --vinyl-label: rgba(46, 95, 143, 0.92);
+}
+
+.vinyl-disc--coral {
+    --vinyl-label: rgba(240, 90, 59, 0.92);
+}
+
+.vinyl-disc--mint {
+    --vinyl-label: rgba(158, 216, 195, 0.92);
+}
+
+.vinyl-disc--reverse {
+    animation-direction: reverse;
+}
+
+@keyframes vinyl-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 900px) {
+    .vinyl-disc-shell--top-right {
+        right: -8rem;
+        top: 5rem;
+        opacity: 0.24;
+    }
+
+    .vinyl-disc-shell--left-mid {
+        left: -8rem;
+        top: 23rem;
+        opacity: 0.2;
+    }
+
+    .vinyl-disc-shell--bottom-right {
+        right: -10rem;
+        bottom: 10rem;
+        opacity: 0.18;
+    }
+
+    .vinyl-disc-shell--top-left {
+        left: auto;
+        right: 14%;
+        top: 10rem;
+        opacity: 0.12;
+    }
+}
+
+@media (max-width: 640px) {
+    .vinyl-aura {
+        filter: blur(14px);
+    }
+
+    .vinyl-aura--sun {
+        width: 18rem;
+        height: 18rem;
+        top: -6rem;
+        left: -6rem;
+    }
+
+    .vinyl-aura--mint {
+        width: 22rem;
+        height: 22rem;
+        top: 36%;
+        right: -8rem;
+    }
+
+    .vinyl-aura--coral {
+        width: 20rem;
+        height: 20rem;
+        right: -7rem;
+        bottom: 7rem;
+    }
+
+    .vinyl-disc-shell--top-right {
+        width: 17rem;
+        right: -7rem;
+        top: 7rem;
+    }
+
+    .vinyl-disc-shell--left-mid {
+        width: 14rem;
+        left: -6rem;
+        top: 31rem;
+    }
+
+    .vinyl-disc-shell--bottom-right {
+        width: 18rem;
+        right: -7rem;
+        bottom: 18rem;
+    }
+
+    .vinyl-disc-shell--top-left {
+        width: 9rem;
+        right: 10%;
+        top: 12rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vinyl-disc {
+        animation: none;
+    }
 }
 
 .display-font {

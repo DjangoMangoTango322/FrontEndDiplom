@@ -12,6 +12,11 @@ export default function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
 
+    const getPostLoginTarget = () => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('next') || '/';
+    };
+
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -20,7 +25,7 @@ export default function Login() {
 
         if (token && role && username) {
             login(token, role, username);
-            navigate('/', { replace: true });
+            navigate(getPostLoginTarget(), { replace: true });
         }
     }, [navigate, login]);
 
@@ -29,7 +34,7 @@ export default function Login() {
         try {
             const res = await api.post('/auth/login', { email, password });
             login(res.data.token, res.data.userRole || res.data.role, res.data.username);
-            navigate('/');
+            navigate(getPostLoginTarget());
         } catch {
             alert('Неверный логин или пароль');
         }

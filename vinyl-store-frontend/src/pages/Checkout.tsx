@@ -1,18 +1,38 @@
-import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
-import api from '../api/api';
-import { useState } from 'react';
-import Toast, { type ToastState } from '../components/Toast';
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Gift, Truck } from 'lucide-react';
+import api from '../api/api';
+import Toast, { type ToastState } from '../components/Toast';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const formatPrice = (value: number) => value.toLocaleString('ru-RU');
 
 export default function Checkout() {
-    const { cart, getTotal, clearCart } = useCart();
+    const { isAuthenticated } = useAuth();
+    const { cart, clearCart, getTotal, isCartLoading, refreshCart, usesServerCart } = useCart();
     const navigate = useNavigate();
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
     const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
     const [toast, setToast] = useState<ToastState>({ open: false, type: 'success', title: '' });
+
+    const selectedParam = new URLSearchParams(location.search).get('selected');
+    const selectedAlbumIds = selectedParam
+        ? selectedParam.split(',').map(value => Number(value)).filter(value => Number.isFinite(value) && value > 0)
+        : [];
+
+    const selectedItems = useMemo(() => {
+        if (selectedAlbumIds.length === 0) {
+            return cart;
+        }
+
+        const selectedSet = new Set(selectedAlbumIds);
+        const filtered = cart.filter(item => selectedSet.has(item.albumID));
+        return filtered.length > 0 ? filtered : cart;
+    }, [cart, selectedAlbumIds]);
+
+    const total = getTotal(selectedItems);
 
     const [form, setForm] = useState({
         name: '',
@@ -23,15 +43,25 @@ export default function Checkout() {
         giftRecipientName: '',
         giftRecipientEmail: '',
         giftFromName: '',
-        giftMessage: ''
+        giftMessage: '',
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+
+        if (!isAuthenticated) {
+            navigate(`/login?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`);
+            return;
+        }
+
+        if (selectedItems.length === 0) {
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const res = await api.post('/orders', {
+            const payload = {
                 name: form.name,
                 phone: form.phone,
                 address: form.address,
@@ -41,34 +71,84 @@ export default function Checkout() {
                 giftRecipientEmail: form.isGift ? form.giftRecipientEmail : null,
                 giftFromName: form.isGift ? form.giftFromName : null,
                 giftMessage: form.isGift ? form.giftMessage : null,
-                items: cart.map(item => ({
-                    albumID: item.albumID,
-                    quantity: item.quantity,
-                    priceAtPurchase: item.price
-                }))
-            });
+            };
 
-            clearCart();
-            setSuccessOrderId(res.data.orderID);
-        } catch (err: any) {
+            const cartItemIds = selectedItems
+                .map(item => item.cartItemId)
+                .filter((value): value is number => typeof value === 'number');
+
+            const response = usesServerCart && cartItemIds.length === selectedItems.length
+                ? await api.post('/cart/checkout', {
+                    ...payload,
+                    cartItemIds,
+                })
+                : await api.post('/orders', {
+                    ...payload,
+                    items: selectedItems.map(item => ({
+                        albumID: item.albumID,
+                        quantity: item.quantity,
+                        priceAtPurchase: item.price,
+                    })),
+                });
+
+            if (usesServerCart) {
+                await refreshCart();
+            } else {
+                await clearCart();
+            }
+
+            setSuccessOrderId(response.data.orderId ?? response.data.orderID ?? null);
+        } catch (error) {
+            const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message;
             setToast({
                 open: true,
                 type: 'error',
                 title: 'Не удалось оформить заказ',
-                description: err.response?.data?.message || 'Попробуйте ещё раз через пару секунд.'
+                description: message || 'Попробуйте еще раз через пару секунд.',
             });
         } finally {
             setLoading(false);
         }
     };
 
-    if (cart.length === 0 && !successOrderId) {
+    if (isCartLoading) {
+        return (
+            <main className="mx-auto max-w-4xl px-5 py-20">
+                <div className="poster-border bg-[var(--paper-soft)] p-8 text-center font-bold">
+                    Подготавливаем корзину к оформлению...
+                </div>
+            </main>
+        );
+    }
+
+    if (!isAuthenticated && !successOrderId) {
+        return (
+            <main className="mx-auto max-w-3xl px-5 py-20 text-center">
+                <div className="bg-[var(--paper-soft)] p-8 poster-border">
+                    <h1 className="display-font text-6xl leading-none">Нужен вход в аккаунт</h1>
+                    <p className="mx-auto mt-5 max-w-xl text-lg leading-7 text-[var(--muted)]">
+                        Чтобы оформить заказ и сохранить историю покупок, сначала войдите в аккаунт. Корзина никуда не исчезнет.
+                    </p>
+                    <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                        <button onClick={() => navigate(`/login?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`)} className="border-2 border-[var(--line)] bg-[var(--ink)] px-8 py-4 font-black uppercase tracking-[0.14em] text-white">
+                            Войти
+                        </button>
+                        <button onClick={() => navigate('/cart')} className="border-2 border-[var(--line)] bg-[var(--sun)] px-8 py-4 font-black uppercase tracking-[0.14em]">
+                            Вернуться в корзину
+                        </button>
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
+    if (selectedItems.length === 0 && !successOrderId) {
         return (
             <main className="mx-auto max-w-2xl px-5 py-20 text-center">
                 <div className="bg-[var(--paper-soft)] p-8 poster-border">
-                    <h1 className="display-font text-6xl leading-none">Корзина пуста</h1>
-                    <button onClick={() => navigate('/')} className="mt-8 border-2 border-[var(--line)] bg-[var(--coral)] px-8 py-4 font-black uppercase tracking-[0.14em] text-white">
-                        Перейти в каталог
+                    <h1 className="display-font text-6xl leading-none">Нечего оформлять</h1>
+                    <button onClick={() => navigate('/cart')} className="mt-8 border-2 border-[var(--line)] bg-[var(--coral)] px-8 py-4 font-black uppercase tracking-[0.14em] text-white">
+                        Вернуться в корзину
                     </button>
                 </div>
             </main>
@@ -101,8 +181,13 @@ export default function Checkout() {
     return (
         <main className="mx-auto max-w-7xl px-5 py-12 md:px-8">
             <div className="mb-10 border-b-2 border-[var(--line)] pb-8">
-                <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Checkout</div>
+                <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Заказ пластинок</div>
                 <h1 className="display-font mt-2 text-6xl leading-none md:text-9xl">Оформление</h1>
+                {selectedItems.length !== cart.length && (
+                    <p className="mt-4 text-lg font-semibold text-[var(--muted)]">
+                        Оформляем только выбранные позиции из корзины.
+                    </p>
+                )}
             </div>
 
             <div className="grid gap-8 lg:grid-cols-12">
@@ -115,22 +200,22 @@ export default function Checkout() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Имя и фамилия</span>
-                            <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <input value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Телефон</span>
-                            <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <input type="tel" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Адрес доставки</span>
-                            <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} rows={3} className="w-full resize-y border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <textarea value={form.address} onChange={event => setForm({ ...form, address: event.target.value })} rows={3} className="w-full resize-y border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Способ оплаты</span>
-                            <select value={form.paymentMethod} onChange={e => setForm({ ...form, paymentMethod: e.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none">
+                            <select value={form.paymentMethod} onChange={event => setForm({ ...form, paymentMethod: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none">
                                 <option value="card">Банковской картой</option>
                                 <option value="cash">Наличными при получении</option>
                                 <option value="sbp">СБП</option>
@@ -139,17 +224,17 @@ export default function Checkout() {
 
                         <div className="border-y-2 border-[var(--line)] py-5">
                             <label className="flex items-center gap-3 font-black">
-                                <input type="checkbox" checked={form.isGift} onChange={e => setForm({ ...form, isGift: e.target.checked })} className="h-5 w-5 accent-[var(--coral)]" />
+                                <input type="checkbox" checked={form.isGift} onChange={event => setForm({ ...form, isGift: event.target.checked })} className="h-5 w-5 accent-[var(--coral)]" />
                                 <Gift className="h-5 w-5 text-[var(--coral)]" />
                                 Купить в подарок
                             </label>
 
                             {form.isGift && (
                                 <div className="mt-5 grid gap-4 md:grid-cols-2">
-                                    <input placeholder="Имя получателя" value={form.giftRecipientName} onChange={e => setForm({ ...form, giftRecipientName: e.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" required />
-                                    <input placeholder="Email получателя" type="email" value={form.giftRecipientEmail} onChange={e => setForm({ ...form, giftRecipientEmail: e.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
-                                    <input placeholder="От кого" value={form.giftFromName} onChange={e => setForm({ ...form, giftFromName: e.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
-                                    <textarea placeholder="Сообщение к подарку" value={form.giftMessage} onChange={e => setForm({ ...form, giftMessage: e.target.value })} rows={3} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none md:col-span-2" />
+                                    <input placeholder="Имя получателя" value={form.giftRecipientName} onChange={event => setForm({ ...form, giftRecipientName: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" required />
+                                    <input placeholder="Email получателя" type="email" value={form.giftRecipientEmail} onChange={event => setForm({ ...form, giftRecipientEmail: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
+                                    <input placeholder="От кого" value={form.giftFromName} onChange={event => setForm({ ...form, giftFromName: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
+                                    <textarea placeholder="Сообщение к подарку" value={form.giftMessage} onChange={event => setForm({ ...form, giftMessage: event.target.value })} rows={3} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none md:col-span-2" />
                                 </div>
                             )}
                         </div>
@@ -164,7 +249,7 @@ export default function Checkout() {
                     <div className="sticky top-28 bg-[var(--ink)] p-7 text-white poster-border">
                         <h2 className="display-font text-4xl leading-none">Ваш заказ</h2>
                         <div className="mt-7 space-y-4">
-                            {cart.map(item => (
+                            {selectedItems.map(item => (
                                 <div key={item.albumID} className="flex justify-between gap-4 border-b-2 border-white/15 pb-4">
                                     <div>
                                         <div className="font-black">{item.title}</div>
@@ -176,7 +261,7 @@ export default function Checkout() {
                         </div>
                         <div className="mt-7 flex justify-between border-t-2 border-white pt-5">
                             <span className="font-black uppercase tracking-[0.16em]">Итого</span>
-                            <span className="display-font text-4xl leading-none">{formatPrice(getTotal())} ₽</span>
+                            <span className="display-font text-4xl leading-none">{formatPrice(total)} ₽</span>
                         </div>
                         <p className="mt-3 text-sm text-[var(--sun)]">Доставка бесплатная.</p>
                     </div>

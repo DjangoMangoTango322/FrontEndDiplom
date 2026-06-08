@@ -13,9 +13,10 @@ export default function Register() {
 
     const handleSendCode = async () => {
         if (!email.trim()) {
-            alert('Сначала введи email');
+            alert('Сначала введите email');
             return;
         }
+
         try {
             setIsSendingCode(true);
             const res = await api.post('/auth/register/send-code', { email });
@@ -34,8 +35,8 @@ export default function Register() {
         }
     };
 
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleRegister = async (event: React.FormEvent) => {
+        event.preventDefault();
         try {
             await api.post('/auth/register', { username, email, password, emailCode });
             alert('Регистрация успешна. Теперь войдите.');
@@ -48,10 +49,10 @@ export default function Register() {
     return (
         <main className="mx-auto grid min-h-[74vh] max-w-6xl items-center gap-10 px-5 py-14 md:px-8 lg:grid-cols-2">
             <section>
-                <div className="text-xs font-black uppercase tracking-[0.24em] text-[var(--coral)]">New member</div>
+                <div className="text-xs font-black uppercase tracking-[0.24em] text-[var(--coral)]">Новый покупатель</div>
                 <h1 className="display-font mt-4 text-7xl leading-none md:text-9xl">Создать аккаунт</h1>
                 <p className="mt-5 max-w-xl text-xl leading-8 text-[var(--muted)]">
-                    Отправим код подтверждения на email и завершим регистрацию после проверки.
+                    Аккаунт нужен, чтобы оформлять заказы на пластинки, отслеживать покупки и получать подборки винила под свой вкус.
                 </p>
             </section>
 
@@ -63,7 +64,7 @@ export default function Register() {
                             <input
                                 type="email"
                                 value={email}
-                                onChange={e => setEmail(e.target.value)}
+                                onChange={event => setEmail(event.target.value)}
                                 className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20"
                                 required
                             />
@@ -83,7 +84,7 @@ export default function Register() {
                         <input
                             type="text"
                             value={emailCode}
-                            onChange={e => setEmailCode(e.target.value)}
+                            onChange={event => setEmailCode(event.target.value)}
                             className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20"
                             required
                         />
@@ -94,7 +95,7 @@ export default function Register() {
                         <input
                             type="text"
                             value={username}
-                            onChange={e => setUsername(e.target.value)}
+                            onChange={event => setUsername(event.target.value)}
                             className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20"
                             required
                         />
@@ -105,7 +106,7 @@ export default function Register() {
                         <input
                             type="password"
                             value={password}
-                            onChange={e => setPassword(e.target.value)}
+                            onChange={event => setPassword(event.target.value)}
                             className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20"
                             required
                         />

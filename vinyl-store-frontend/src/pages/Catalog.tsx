@@ -2,8 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 import api from '../api/api';
 import type { Album, Artist, Genre } from '../types';
 import AlbumCard from '../components/AlbumCard';
-import { ArrowDown, AlertTriangle, Filter, Search, X } from 'lucide-react';
+import { AlertTriangle, ArrowDown, Disc3, Filter, Package, Search, Truck, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const CATALOG_PAGE_SIZE = 100;
+
+type CatalogResponse = {
+    data: Album[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+};
 
 const makeDemoCover = (title: string, artist: string, seed: number) => {
     const palettes = [
@@ -15,9 +25,35 @@ const makeDemoCover = (title: string, artist: string, seed: number) => {
         ['#f4eadf', '#2e5f8f', '#15110f'],
     ];
     const [bg, accent, ink] = palettes[seed % palettes.length];
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900"><rect width="900" height="900" fill="${bg}"/><circle cx="450" cy="450" r="292" fill="${accent}" stroke="${ink}" stroke-width="24"/><circle cx="450" cy="450" r="92" fill="${bg}" stroke="${ink}" stroke-width="18"/><path d="M82 112H818M82 788H818" stroke="${ink}" stroke-width="18"/><text x="82" y="216" font-family="Arial Black, Arial" font-size="72" font-weight="900" fill="${ink}">${title.slice(0, 16)}</text><text x="82" y="730" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="8" fill="${ink}">${artist.slice(0, 22).toUpperCase()}</text></svg>`;
+    const safeTitle = title.replace(/[<&>"]/g, '');
+    const safeArtist = artist.replace(/[<&>"]/g, '');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900"><rect width="900" height="900" fill="${bg}"/><circle cx="450" cy="450" r="292" fill="${accent}" stroke="${ink}" stroke-width="24"/><circle cx="450" cy="450" r="92" fill="${bg}" stroke="${ink}" stroke-width="18"/><path d="M82 112H818M82 788H818" stroke="${ink}" stroke-width="18"/><text x="82" y="216" font-family="Arial Black, Arial" font-size="72" font-weight="900" fill="${ink}">${safeTitle.slice(0, 16)}</text><text x="82" y="730" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="8" fill="${ink}">${safeArtist.slice(0, 22).toUpperCase()}</text></svg>`;
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
+
+const fallbackShowcase = [
+    { id: 101, title: 'Blue Room', artist: 'Jazz Archive', imageURL: undefined, seed: 1 },
+    { id: 102, title: 'Night Press', artist: 'Indie Select', imageURL: undefined, seed: 2 },
+    { id: 103, title: 'Soul Cuts', artist: 'Vinyl Store', imageURL: undefined, seed: 3 },
+];
+
+const serviceCards = [
+    {
+        title: 'Новые релизы и переиздания',
+        text: 'Собираем свежие LP, культовые переиздания и альбомы, которые хочется слушать целиком.',
+        Icon: Disc3,
+    },
+    {
+        title: 'Подбор по жанрам и артистам',
+        text: 'Фильтры помогают быстро найти джаз, рок, электронику, хип-хоп и пластинки любимых исполнителей.',
+        Icon: Package,
+    },
+    {
+        title: 'Упаковка и доставка',
+        text: 'Пластинки отправляются в плотной защитной упаковке, чтобы обложка и диск приехали аккуратно.',
+        Icon: Truck,
+    },
+];
 
 export default function Catalog() {
     const [albums, setAlbums] = useState<Album[]>([]);
@@ -35,15 +71,38 @@ export default function Catalog() {
     const { isAuthenticated } = useAuth();
 
     useEffect(() => {
+        const fetchAllAlbums = async () => {
+            const firstPage = await api.get<CatalogResponse>('/albums', {
+                params: { page: 1, pageSize: CATALOG_PAGE_SIZE }
+            });
+
+            const { data, totalPages } = firstPage.data;
+            if (totalPages <= 1) {
+                return data;
+            }
+
+            const remainingPages = await Promise.all(
+                Array.from({ length: totalPages - 1 }, (_, index) =>
+                    api.get<CatalogResponse>('/albums', {
+                        params: { page: index + 2, pageSize: CATALOG_PAGE_SIZE }
+                    }))
+            );
+
+            return [
+                ...data,
+                ...remainingPages.flatMap(response => response.data.data)
+            ];
+        };
+
         const fetchData = async () => {
             try {
                 const [albumsRes, artistsRes, genresRes] = await Promise.all([
-                    api.get('/albums', { params: { page: 1, pageSize: 5000 } }),
+                    fetchAllAlbums(),
                     api.get('/albums/artists'),
                     api.get('/albums/genres')
                 ]);
 
-                setAlbums(albumsRes.data.data || albumsRes.data);
+                setAlbums(albumsRes);
                 setArtists(artistsRes.data);
                 setGenres(genresRes.data);
                 setLoadError(null);
@@ -51,12 +110,13 @@ export default function Catalog() {
                 setAlbums([]);
                 setArtists([]);
                 setGenres([]);
-                setLoadError('Не удалось подключиться к бэкенду. Проверьте, что API запущен на http://localhost:5062/api (или http://127.0.0.1:5062/api), либо задайте VITE_API_URL.');
+                setLoadError('Не удалось подключиться к каталогу. Проверьте, что API запущен, и обновите страницу.');
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
+
+        void fetchData();
     }, []);
 
     useEffect(() => {
@@ -65,6 +125,7 @@ export default function Catalog() {
                 setRecommended([]);
                 return;
             }
+
             try {
                 setRecLoading(true);
                 const res = await api.get<Album[]>('/recommendations', { params: { limit: 10 } });
@@ -75,7 +136,8 @@ export default function Catalog() {
                 setRecLoading(false);
             }
         };
-        fetchRecs();
+
+        void fetchRecs();
     }, [isAuthenticated]);
 
     useEffect(() => {
@@ -83,15 +145,20 @@ export default function Catalog() {
 
         if (search) {
             const term = search.toLowerCase();
-            result = result.filter(a =>
-                a.title.toLowerCase().includes(term) ||
-                a.artist?.name.toLowerCase().includes(term) ||
-                a.genre?.name.toLowerCase().includes(term)
+            result = result.filter(album =>
+                album.title.toLowerCase().includes(term) ||
+                album.artist?.name.toLowerCase().includes(term) ||
+                album.genre?.name.toLowerCase().includes(term)
             );
         }
 
-        if (selectedGenre) result = result.filter(a => a.genreID === selectedGenre);
-        if (selectedArtist) result = result.filter(a => a.artistID === selectedArtist);
+        if (selectedGenre) {
+            result = result.filter(album => album.genreID === selectedGenre);
+        }
+
+        if (selectedArtist) {
+            result = result.filter(album => album.artistID === selectedArtist);
+        }
 
         setFiltered(result);
     }, [search, selectedGenre, selectedArtist, albums]);
@@ -114,16 +181,19 @@ export default function Catalog() {
         };
     }, [albums]);
 
-    if (loading) {
-        return (
-            <div className="min-h-[70vh] flex items-center justify-center px-6">
-                <div className="poster-border bg-[var(--paper-soft)] p-10 text-center">
-                    <div className="mx-auto h-14 w-14 animate-spin rounded-full border-4 border-[var(--line)] border-t-[var(--coral)]" />
-                    <p className="mt-5 font-bold uppercase tracking-[0.18em]">Загружаем виниловую коллекцию</p>
-                </div>
-            </div>
-        );
-    }
+    const genreLabels = genres.length > 0
+        ? genres.slice(0, 5).map(genre => genre.name)
+        : ['Jazz', 'Rock', 'Soul', 'Hip-hop', 'Electronic'];
+
+    const showcaseRecords = albums.length > 0
+        ? albums.slice(0, 3).map(album => ({
+            id: album.albumID,
+            title: album.title,
+            artist: album.artist?.name || 'Vinyl Store',
+            imageURL: album.imageURL,
+            seed: album.albumID,
+        }))
+        : fallbackShowcase;
 
     return (
         <main>
@@ -134,22 +204,32 @@ export default function Catalog() {
                 }} />
                 <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 md:px-8 lg:grid-cols-12 lg:py-20">
                     <div className="lg:col-span-7">
-                        <h1 className="display-font max-w-5xl text-[clamp(3.8rem,10vw,9.4rem)] leading-[0.82]">
-                            RECORDS<br />FOR LOUD<br />ROOMS
+                        <div className="mb-5 inline-flex border-2 border-[var(--line)] bg-[var(--sun)] px-4 py-2 text-xs font-black uppercase tracking-[0.18em]">
+                            Магазин виниловых пластинок
+                        </div>
+                        <h1 className="display-font max-w-5xl text-[clamp(3.6rem,9vw,8.6rem)] leading-[0.86]">
+                            Винил для домашней коллекции
                         </h1>
                         <p className="mt-7 max-w-2xl text-xl font-medium leading-8 text-[var(--muted)]">
-                            Светлый, постерный каталог винила: альбомы выглядят как афиши, фильтры работают быстро,
-                            а редкие релизы не тонут в тёмном интерфейсе.
+                            Каталог пластинок для тех, кто выбирает музыку не фоном, а целым ритуалом:
+                            LP, переиздания, редкие альбомы и подарочные релизы с выразительными обложками.
                         </p>
+                        <div className="mt-7 flex flex-wrap gap-2">
+                            {genreLabels.map(label => (
+                                <span key={label} className="border-2 border-[var(--line)] bg-[var(--paper-soft)] px-3 py-1 text-xs font-black uppercase tracking-[0.12em]">
+                                    {label}
+                                </span>
+                            ))}
+                        </div>
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <button
                                 onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })}
                                 className="inline-flex items-center justify-center gap-3 border-2 border-[var(--line)] bg-[var(--coral)] px-7 py-4 font-black uppercase tracking-[0.14em] text-white poster-border-sm"
                             >
-                                Смотреть каталог <ArrowDown className="h-5 w-5" />
+                                Смотреть пластинки <ArrowDown className="h-5 w-5" />
                             </button>
-                            <div className="border-2 border-[var(--line)] bg-[var(--sun)] px-7 py-4 font-black uppercase tracking-[0.14em]">
-                                {stats.count} релизов
+                            <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] px-7 py-4 font-black uppercase tracking-[0.14em]">
+                                {stats.count || '5000+'} релизов
                             </div>
                         </div>
                     </div>
@@ -160,36 +240,36 @@ export default function Catalog() {
                                 Витрина недели
                             </div>
                             <div className="grid grid-cols-3 gap-3 pt-5">
-                                {albums.slice(0, 3).map((album, index) => (
+                                {showcaseRecords.map((record, index) => (
                                     <img
-                                        key={album.albumID}
-                                        src={album.imageURL || `https://picsum.photos/seed/${album.albumID}/500/500`}
-                                        alt={album.title}
-                                        onError={e => {
-                                            e.currentTarget.onerror = null;
-                                            e.currentTarget.src = makeDemoCover(album.title, album.artist?.name || 'Vinyl Store', album.albumID);
+                                        key={record.id}
+                                        src={record.imageURL || makeDemoCover(record.title, record.artist, record.seed)}
+                                        alt={record.title}
+                                        onError={(event) => {
+                                            event.currentTarget.onerror = null;
+                                            event.currentTarget.src = makeDemoCover(record.title, record.artist, record.seed);
                                         }}
                                         className={`aspect-square w-full border-2 border-[var(--line)] object-cover ${index === 1 ? 'translate-y-8' : ''}`}
                                     />
                                 ))}
                             </div>
-                            <div className="mt-10 grid grid-cols-3 border-t-2 border-[var(--line)] pt-4 text-center">
-                                <div>
-                                    <div className="display-font text-4xl">{stats.genres}</div>
-                                    <div className="text-xs font-black uppercase text-[var(--muted)]">жанра</div>
-                                </div>
-                                <div className="border-x-2 border-[var(--line)]">
-                                    <div className="display-font text-4xl">{stats.oldest || 'LP'}</div>
-                                    <div className="text-xs font-black uppercase text-[var(--muted)]">архив</div>
-                                </div>
-                                <div>
-                                    <div className="display-font text-4xl">LP</div>
-                                    <div className="text-xs font-black uppercase text-[var(--muted)]">формат</div>
-                                </div>
-                            </div>
+                            <p className="mt-10 border-t-2 border-[var(--line)] pt-4 text-sm font-bold leading-6 text-[var(--muted)]">
+                                Каждая позиция в каталоге выглядит как полноценный релиз: обложка, артист, жанр,
+                                год и понятное описание вместо пустой заглушки.
+                            </p>
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <section className="mx-auto grid max-w-7xl gap-5 px-5 py-10 md:grid-cols-3 md:px-8">
+                {serviceCards.map(({ title, text, Icon }) => (
+                    <article key={title} className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-5">
+                        <Icon className="h-7 w-7 text-[var(--coral)]" />
+                        <h2 className="mt-4 text-lg font-black uppercase tracking-[0.08em]">{title}</h2>
+                        <p className="mt-3 text-sm font-semibold leading-6 text-[var(--muted)]">{text}</p>
+                    </article>
+                ))}
             </section>
 
             <section id="catalog" className="mx-auto max-w-7xl px-5 py-12 md:px-8">
@@ -204,25 +284,35 @@ export default function Catalog() {
                     <div className="mb-12 border-y-2 border-[var(--line)] py-8">
                         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
                             <div>
-                                <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)]">Подборка</div>
+                                <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)]">Персональная полка</div>
                                 <h2 className="display-font mt-2 text-5xl leading-none">Рекомендации по Spotify</h2>
-                                <p className="mt-3 max-w-2xl text-[var(--muted)]">Подбираем винил по любимым артистам и жанрам.</p>
+                                <p className="mt-3 max-w-2xl text-[var(--muted)]">
+                                    Подбираем пластинки по вашим любимым артистам и жанрам, чтобы проще найти следующий альбом в коллекцию.
+                                </p>
                             </div>
                         </div>
 
                         {recLoading ? (
-                            <div className="mt-6 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-7 font-bold">Считаем рекомендации...</div>
+                            <div className="mt-6 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-7 font-bold">Собираем рекомендации...</div>
                         ) : recommended.length > 0 ? (
                             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                                 {recommended.map(album => <AlbumCard key={`rec-${album.albumID}`} album={album} />)}
                             </div>
                         ) : (
                             <div className="mt-6 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-7 font-bold">
-                                Войдите через Spotify, чтобы получить персональную полку.
+                                Когда появятся данные Spotify, здесь будет персональная подборка пластинок под ваш вкус.
                             </div>
                         )}
                     </div>
                 )}
+
+                <div className="mb-7">
+                    <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)]">Каталог винила</div>
+                    <h2 className="display-font mt-2 text-5xl leading-none md:text-7xl">Подберите альбом под свой проигрыватель</h2>
+                    <p className="mt-4 max-w-2xl text-lg leading-7 text-[var(--muted)]">
+                        Поиск по каталогу виниловых пластинок работает по названию альбома, артисту и жанру.
+                    </p>
+                </div>
 
                 <div className="sticky top-[78px] z-40 mb-10 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 shadow-[0_8px_0_rgba(21,17,15,0.16)]">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -230,29 +320,29 @@ export default function Catalog() {
                             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--coral)]" />
                             <input
                                 type="text"
-                                placeholder="Поиск по названию, артисту или жанру"
+                                placeholder="Например: Kind of Blue, Radiohead, trip-hop"
                                 value={search}
-                                onChange={e => setSearch(e.target.value)}
+                                onChange={event => setSearch(event.target.value)}
                                 className="h-13 w-full border-2 border-[var(--line)] bg-white py-3 pl-12 pr-4 text-base font-bold outline-none focus:bg-[var(--sun)]/20"
                             />
                         </div>
 
                         <select
                             value={selectedGenre || ''}
-                            onChange={e => setSelectedGenre(e.target.value ? Number(e.target.value) : null)}
+                            onChange={event => setSelectedGenre(event.target.value ? Number(event.target.value) : null)}
                             className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none"
                         >
                             <option value="">Все жанры</option>
-                            {genres.map(g => <option key={g.genreID} value={g.genreID}>{g.name}</option>)}
+                            {genres.map(genre => <option key={genre.genreID} value={genre.genreID}>{genre.name}</option>)}
                         </select>
 
                         <select
                             value={selectedArtist || ''}
-                            onChange={e => setSelectedArtist(e.target.value ? Number(e.target.value) : null)}
+                            onChange={event => setSelectedArtist(event.target.value ? Number(event.target.value) : null)}
                             className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none"
                         >
                             <option value="">Все артисты</option>
-                            {artists.map(a => <option key={a.artistID} value={a.artistID}>{a.name}</option>)}
+                            {artists.map(artist => <option key={artist.artistID} value={artist.artistID}>{artist.name}</option>)}
                         </select>
 
                         {hasActiveFilters && (
@@ -269,7 +359,7 @@ export default function Catalog() {
                 <div className="mb-8 flex flex-col justify-between gap-3 border-b-2 border-[var(--line)] pb-5 sm:flex-row sm:items-end">
                     <div>
                         <span className="display-font text-6xl leading-none">{filtered.length}</span>
-                        <span className="ml-3 text-lg font-bold text-[var(--muted)]">альбомов найдено</span>
+                        <span className="ml-3 text-lg font-bold text-[var(--muted)]">пластинок найдено</span>
                     </div>
                     {hasActiveFilters && (
                         <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-[var(--coral)]">
@@ -278,14 +368,27 @@ export default function Catalog() {
                     )}
                 </div>
 
-                {filtered.length > 0 ? (
+                {loading ? (
+                    <div>
+                        <div className="mb-7 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-7 font-bold">
+                            Загружаем каталог пластинок...
+                        </div>
+                        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {Array.from({ length: 4 }).map((_, index) => (
+                                <div key={index} className="h-[420px] animate-pulse border-2 border-[var(--line)] bg-[var(--paper-soft)]" />
+                            ))}
+                        </div>
+                    </div>
+                ) : filtered.length > 0 ? (
                     <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {filtered.map(album => <AlbumCard key={album.albumID} album={album} />)}
                     </div>
                 ) : (
                     <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-12 text-center poster-border-sm">
-                        <h3 className="display-font text-5xl">Ничего не найдено</h3>
-                        <p className="mx-auto mt-4 max-w-md text-[var(--muted)]">Попробуйте изменить поиск или сбросить фильтры.</p>
+                        <h3 className="display-font text-5xl">Пластинки не найдены</h3>
+                        <p className="mx-auto mt-4 max-w-md text-[var(--muted)]">
+                            Попробуйте изменить запрос, выбрать другой жанр или сбросить фильтры, чтобы снова увидеть весь каталог винила.
+                        </p>
                         <button onClick={clearFilters} className="mt-7 border-2 border-[var(--line)] bg-[var(--sun)] px-6 py-3 font-black uppercase tracking-[0.14em]">
                             Сбросить все фильтры
                         </button>

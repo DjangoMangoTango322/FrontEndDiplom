@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Disc3, ShoppingBag, LogOut, User, Menu, X, ChevronDown } from 'lucide-react';
+import { ChevronDown, Disc3, Heart, LogOut, Menu, ShoppingBag, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useFavorites } from '../context/FavoritesContext';
 
 export default function Navbar() {
     const { getItemCount } = useCart();
     const { isAuthenticated, role, username, logout } = useAuth();
+    const { favorites } = useFavorites();
     const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -20,6 +22,7 @@ export default function Navbar() {
 
     const navLinks = [
         { to: '/', label: 'Каталог' },
+        ...(isAuthenticated ? [{ to: '/favorites', label: 'Избранное' }] : []),
         ...(isAuthenticated ? [{ to: '/orders', label: 'Мои заказы' }] : []),
         ...(role === 'Admin' ? [{ to: '/admin', label: 'Админ' }] : []),
     ];
@@ -36,7 +39,12 @@ export default function Navbar() {
                     <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--sun)]">
                         <Disc3 className="h-7 w-7" />
                     </span>
-                    <span className="display-font text-xl leading-none md:text-2xl">VINYL<br className="hidden sm:block" /> STORE</span>
+                    <span>
+                        <span className="display-font block text-xl leading-none md:text-2xl">VINYL STORE</span>
+                        <span className="mt-1 hidden text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)] sm:block">
+                            магазин виниловых пластинок
+                        </span>
+                    </span>
                 </Link>
 
                 <div className="hidden items-center gap-7 md:flex">
@@ -48,6 +56,21 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {isAuthenticated && (
+                        <button
+                            onClick={() => navigate('/favorites')}
+                            className="relative grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] transition-transform hover:-translate-y-0.5"
+                            title="Избранное"
+                        >
+                            <Heart className="h-5 w-5" />
+                            {favorites.length > 0 && (
+                                <span className="absolute -right-2 -top-2 grid h-6 min-w-6 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--sun)] px-1 text-xs font-black">
+                                    {favorites.length}
+                                </span>
+                            )}
+                        </button>
+                    )}
+
                     <button
                         onClick={() => navigate('/cart')}
                         className="relative grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] transition-transform hover:-translate-y-0.5"
@@ -80,6 +103,9 @@ export default function Navbar() {
                                     </div>
                                     <Link to="/orders" className="block px-3 py-3 font-bold hover:bg-[var(--sun)]" onClick={() => setIsProfileOpen(false)}>
                                         Мои заказы
+                                    </Link>
+                                    <Link to="/favorites" className="block px-3 py-3 font-bold hover:bg-[var(--sun)]" onClick={() => setIsProfileOpen(false)}>
+                                        Избранное
                                     </Link>
                                     <Link to="/profile" className="block px-3 py-3 font-bold hover:bg-[var(--sun)]" onClick={() => setIsProfileOpen(false)}>
                                         Профиль

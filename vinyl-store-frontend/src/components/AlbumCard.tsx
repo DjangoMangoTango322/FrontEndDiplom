@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import type { Album } from '../types';
 import { useCart } from '../context/CartContext';
-import { Info, Plus, ShoppingBag, X } from 'lucide-react';
+import { useFavorites } from '../context/FavoritesContext';
+import { Heart, Info, Plus, ShoppingBag, X } from 'lucide-react';
+import { getAlbumDescription } from '../utils/albumCopy';
+import AlbumPreviewPlayer from './AlbumPreviewPlayer';
 
 interface Props {
     album: Album;
@@ -25,12 +28,22 @@ const makeCover = (title: string, artist: string, seed: number) => {
 
 export default function AlbumCard({ album }: Props) {
     const { addToCart } = useCart();
+    const { isFavorite, toggleFavorite } = useFavorites();
     const [showModal, setShowModal] = useState(false);
-    const fallbackCover = makeCover(album.title, album.artist?.name || 'Vinyl Store', album.albumID);
 
-    const handleAddToCart = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        addToCart(album);
+    const artistName = album.artist?.name || 'Неизвестный артист';
+    const fallbackCover = makeCover(album.title, artistName, album.albumID);
+    const description = getAlbumDescription(album);
+    const favorite = isFavorite(album.albumID);
+
+    const handleAddToCart = (event: MouseEvent) => {
+        event.stopPropagation();
+        void addToCart(album);
+    };
+
+    const handleToggleFavorite = (event: MouseEvent) => {
+        event.stopPropagation();
+        void toggleFavorite(album);
     };
 
     return (
@@ -41,29 +54,41 @@ export default function AlbumCard({ album }: Props) {
             >
                 <div className="relative aspect-square overflow-hidden border-b-2 border-[var(--line)] bg-[var(--sun)]">
                     <img
-                        src={album.imageURL || `https://picsum.photos/seed/vinyl-${album.albumID}/700/700`}
+                        src={album.imageURL || fallbackCover}
                         alt={album.title}
-                        onError={e => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = fallbackCover;
+                        onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = fallbackCover;
                         }}
                         className="h-full w-full object-cover grayscale-[18%] transition duration-700 group-hover:scale-105 group-hover:grayscale-0"
                     />
+
+                    <button
+                        onClick={handleToggleFavorite}
+                        className={`absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full border-2 border-[var(--line)] bg-white transition-transform hover:scale-105 ${
+                            favorite ? 'text-[var(--coral)]' : 'text-[var(--ink)]'
+                        }`}
+                        title={favorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+                    >
+                        <Heart className={`h-5 w-5 ${favorite ? 'fill-current' : ''}`} />
+                    </button>
+
                     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 text-white">
                         <span className="border-2 border-white bg-[var(--coral)] px-3 py-1 text-xs font-black uppercase tracking-[0.16em]">
-                            {album.genre?.name || 'Vinyl'}
+                            {album.genre?.name || 'LP'}
                         </span>
                         <button
                             onClick={handleAddToCart}
                             disabled={album.stockQuantity === 0}
                             className="grid h-11 w-11 place-items-center rounded-full border-2 border-white bg-white text-[var(--ink)] transition-transform hover:scale-105 disabled:opacity-40"
-                            title="Добавить в корзину"
+                            title="Добавить пластинку в корзину"
                         >
                             <Plus className="h-5 w-5" />
                         </button>
                     </div>
+
                     {album.stockQuantity === 0 && (
-                        <div className="absolute right-3 top-3 rotate-3 border-2 border-[var(--line)] bg-white px-3 py-1 text-xs font-black uppercase">
+                        <div className="absolute left-3 top-3 rotate-3 border-2 border-[var(--line)] bg-white px-3 py-1 text-xs font-black uppercase">
                             Нет в наличии
                         </div>
                     )}
@@ -71,18 +96,21 @@ export default function AlbumCard({ album }: Props) {
 
                 <div className="flex flex-1 flex-col p-5">
                     <div className="text-xs font-black uppercase tracking-[0.18em] text-[var(--blue)]">
-                        {album.artist?.name || 'Unknown artist'}
+                        {artistName}
                     </div>
                     <h3 className="display-font mt-2 line-clamp-2 text-2xl leading-[0.96]">
                         {album.title}
                     </h3>
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t-2 border-[var(--line)] pt-4">
+                    <p className="mt-3 line-clamp-3 text-sm font-medium leading-6 text-[var(--muted)]">
+                        {description}
+                    </p>
+                    <div className="mt-auto flex items-center justify-between gap-3 border-t-2 border-[var(--line)] pt-4">
                         <div>
                             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">Цена</div>
                             <div className="text-2xl font-black tabular-nums">{formatPrice(album.price)} ₽</div>
                         </div>
                         <div className="text-right text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
-                            {album.releaseYear || 'Reissue'}<br />
+                            {album.releaseYear || 'Год не указан'}<br />
                             {album.stockQuantity} шт.
                         </div>
                     </div>
@@ -93,16 +121,16 @@ export default function AlbumCard({ album }: Props) {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4" onClick={() => setShowModal(false)}>
                     <div
                         className="max-h-[92vh] w-full max-w-5xl overflow-auto bg-[var(--paper-soft)] poster-border"
-                        onClick={e => e.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <div className="grid lg:grid-cols-2">
                             <div className="relative min-h-[320px] border-b-2 border-[var(--line)] bg-[var(--sun)] lg:border-b-0 lg:border-r-2">
                                 <img
-                                    src={album.imageURL || `https://picsum.photos/seed/vinyl-${album.albumID}/900/900`}
+                                    src={album.imageURL || fallbackCover}
                                     alt={album.title}
-                                    onError={e => {
-                                        e.currentTarget.onerror = null;
-                                        e.currentTarget.src = fallbackCover;
+                                    onError={(event) => {
+                                        event.currentTarget.onerror = null;
+                                        event.currentTarget.src = fallbackCover;
                                     }}
                                     className="h-full min-h-[320px] w-full object-cover"
                                 />
@@ -118,25 +146,29 @@ export default function AlbumCard({ album }: Props) {
                             <div className="flex flex-col p-7 md:p-10">
                                 <div className="flex flex-wrap gap-2">
                                     <span className="border-2 border-[var(--line)] bg-[var(--mint)] px-3 py-1 text-xs font-black uppercase tracking-[0.16em]">
-                                        {album.genre?.name || 'Vinyl'}
+                                        {album.genre?.name || 'LP'}
                                     </span>
                                     <span className="border-2 border-[var(--line)] bg-[var(--sun)] px-3 py-1 text-xs font-black uppercase tracking-[0.16em]">
-                                        {album.releaseYear || 'Archive'}
+                                        {album.releaseYear || 'Каталожное издание'}
                                     </span>
                                 </div>
 
                                 <h2 className="display-font mt-6 text-5xl leading-[0.92] md:text-7xl">{album.title}</h2>
-                                <p className="mt-4 text-2xl font-bold text-[var(--blue)]">{album.artist?.name}</p>
+                                <p className="mt-4 text-2xl font-bold text-[var(--blue)]">{artistName}</p>
 
                                 <p className="mt-8 max-w-prose text-lg leading-8 text-[var(--muted)]">
-                                    {album.description || 'Виниловая пластинка для внимательного прослушивания: плотный звук, физический формат и обложка, которую хочется держать в руках.'}
+                                    {description}
                                 </p>
 
                                 <div className="mt-8 flex items-start gap-3 border-y-2 border-[var(--line)] py-5">
                                     <Info className="mt-1 h-5 w-5 text-[var(--coral)]" />
                                     <div className="text-sm font-semibold text-[var(--muted)]">
-                                        В наличии {album.stockQuantity} шт. Добавление в корзину ограничено остатком на складе.
+                                        В наличии {album.stockQuantity} шт. Мы бережно упакуем пластинку в плотный mailer перед отправкой.
                                     </div>
+                                </div>
+
+                                <div className="mt-8">
+                                    <AlbumPreviewPlayer album={album} />
                                 </div>
 
                                 <div className="mt-auto flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
@@ -144,13 +176,27 @@ export default function AlbumCard({ album }: Props) {
                                         <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)]">Стоимость</div>
                                         <div className="display-font text-6xl leading-none">{formatPrice(album.price)} ₽</div>
                                     </div>
-                                    <button
-                                        onClick={handleAddToCart}
-                                        disabled={album.stockQuantity === 0}
-                                        className="inline-flex items-center justify-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-8 py-4 font-black uppercase tracking-[0.13em] text-white transition-transform hover:-translate-y-0.5 disabled:opacity-45"
-                                    >
-                                        <ShoppingBag className="h-5 w-5" /> В корзину
-                                    </button>
+                                    <div className="flex flex-col gap-3 sm:items-end">
+                                        <button
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                void toggleFavorite(album);
+                                            }}
+                                            className={`inline-flex items-center justify-center gap-3 border-2 border-[var(--line)] px-8 py-4 font-black uppercase tracking-[0.13em] ${
+                                                favorite ? 'bg-[var(--sun)] text-[var(--coral)]' : 'bg-white'
+                                            }`}
+                                        >
+                                            <Heart className={`h-5 w-5 ${favorite ? 'fill-current' : ''}`} />
+                                            {favorite ? 'В избранном' : 'В избранное'}
+                                        </button>
+                                        <button
+                                            onClick={handleAddToCart}
+                                            disabled={album.stockQuantity === 0}
+                                            className="inline-flex items-center justify-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-8 py-4 font-black uppercase tracking-[0.13em] text-white transition-transform hover:-translate-y-0.5 disabled:opacity-45"
+                                        >
+                                            <ShoppingBag className="h-5 w-5" /> В корзину
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

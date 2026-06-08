@@ -31,8 +31,24 @@ export interface User {
     role: 'Customer' | 'Admin';
 }
 
-export interface CartItem extends Album {
+export interface CartItem {
+    cartItemId?: number;
+    albumID: number;
+    title: string;
+    artist?: Artist;
+    genre?: Genre;
+    imageURL?: string;
+    price: number;
     quantity: number;
+    stockQuantity: number;
+    lineTotal?: number;
+}
+
+export interface CartSummary {
+    items: CartItem[];
+    subtotal: number;
+    totalItems: number;
+    distinctItems: number;
 }
 
 export interface OrderItem {

@@ -1,6 +1,6 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosError } from 'axios';
 
-
+//https://vynil.somee.com/api
 const API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5062/api';
 
 const api = axios.create({
@@ -26,7 +26,11 @@ api.interceptors.response.use(
             localStorage.removeItem('token');
             localStorage.removeItem('role');
             localStorage.removeItem('username');
-            window.location.href = '/login';
+
+            if (window.location.pathname !== '/login') {
+                const next = `${window.location.pathname}${window.location.search}`;
+                window.location.href = `/login?next=${encodeURIComponent(next)}`;
+            }
         }
         return Promise.reject(error);
     }
