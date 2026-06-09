@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Gift, Truck } from 'lucide-react';
+import { CheckCircle2, Gift, Truck, AlertCircle } from 'lucide-react';
+import { AddressSuggestions } from 'react-dadata';
+import 'react-dadata/dist/react-dadata.css';
 import api from '../api/api';
 import Toast, { type ToastState } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 const formatPrice = (value: number) => value.toLocaleString('ru-RU');
+
+// Ваш API ключ DaData
+const DADATA_API_KEY = "c560feed5b5c24e324ebaaf1f0fd54ecd8aae7a2";
 
 export default function Checkout() {
     const { isAuthenticated } = useAuth();
@@ -17,16 +22,15 @@ export default function Checkout() {
     const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
     const [toast, setToast] = useState<ToastState>({ open: false, type: 'success', title: '' });
 
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
     const selectedParam = new URLSearchParams(location.search).get('selected');
     const selectedAlbumIds = selectedParam
         ? selectedParam.split(',').map(value => Number(value)).filter(value => Number.isFinite(value) && value > 0)
         : [];
 
     const selectedItems = useMemo(() => {
-        if (selectedAlbumIds.length === 0) {
-            return cart;
-        }
-
+        if (selectedAlbumIds.length === 0) return cart;
         const selectedSet = new Set(selectedAlbumIds);
         const filtered = cart.filter(item => selectedSet.has(item.albumID));
         return filtered.length > 0 ? filtered : cart;
@@ -46,6 +50,76 @@ export default function Checkout() {
         giftMessage: '',
     });
 
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        const hasDigits = /\d/;
+
+        // 1. Имя и Фамилия (строгая проверка на 2 слова)
+        const nameParts = form.name.trim().split(/\s+/); // Разбиваем по пробелам
+
+        if (!form.name.trim()) {
+            newErrors.name = 'Укажите ваше имя и фамилию';
+        } else if (nameParts.length < 2) {
+            newErrors.name = 'Укажите и имя, и фамилию (через пробел)';
+        } else if (hasDigits.test(form.name)) {
+            newErrors.name = 'Имя и фамилия не могут содержать цифры';
+        }
+
+        // 2. Телефон
+        const digitsOnly = form.phone.replace(/\D/g, '');
+        if (!form.phone.trim()) {
+            newErrors.phone = 'Укажите номер телефона';
+        } else if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+            newErrors.phone = 'Некорректный номер (введите телефон полностью)';
+        }
+
+        // 3. Адрес
+        if (!form.address.trim()) {
+            newErrors.address = 'Начните вводить и выберите адрес из списка';
+        }
+
+        // 4. Подарок
+        if (form.isGift) {
+            // Имя получателя (здесь разрешаем 1 слово)
+            if (!form.giftRecipientName.trim()) {
+                newErrors.giftRecipientName = 'Укажите, кому достанется подарок';
+            } else if (hasDigits.test(form.giftRecipientName)) {
+                newErrors.giftRecipientName = 'Имя не может содержать цифры';
+            }
+
+            // Email получателя
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (form.giftRecipientEmail.trim() && !emailRegex.test(form.giftRecipientEmail.trim())) {
+                newErrors.giftRecipientEmail = 'Некорректный формат почты (пример: name@mail.ru)';
+            }
+
+            // От кого
+            if (form.giftFromName.trim() && hasDigits.test(form.giftFromName)) {
+                newErrors.giftFromName = 'Имя отправителя не может содержать цифры';
+            }
+
+            // Сообщение
+            if (form.giftMessage.trim() && hasDigits.test(form.giftMessage)) {
+                newErrors.giftMessage = 'Сообщение не может содержать цифры';
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const clearError = (field: string) => {
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: '' }));
+        }
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+        if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
+            event.preventDefault();
+        }
+    };
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
@@ -54,23 +128,23 @@ export default function Checkout() {
             return;
         }
 
-        if (selectedItems.length === 0) {
-            return;
-        }
+        if (selectedItems.length === 0) return;
+
+        if (!validateForm()) return;
 
         setLoading(true);
 
         try {
             const payload = {
-                name: form.name,
+                name: form.name.trim(), // Убираем лишние пробелы по краям перед отправкой
                 phone: form.phone,
                 address: form.address,
                 paymentMethod: form.paymentMethod,
                 isGift: form.isGift,
-                giftRecipientName: form.isGift ? form.giftRecipientName : null,
-                giftRecipientEmail: form.isGift ? form.giftRecipientEmail : null,
-                giftFromName: form.isGift ? form.giftFromName : null,
-                giftMessage: form.isGift ? form.giftMessage : null,
+                giftRecipientName: form.isGift ? form.giftRecipientName.trim() : null,
+                giftRecipientEmail: form.isGift ? form.giftRecipientEmail.trim() : null,
+                giftFromName: form.isGift ? form.giftFromName.trim() : null,
+                giftMessage: form.isGift ? form.giftMessage.trim() : null,
             };
 
             const cartItemIds = selectedItems
@@ -78,10 +152,7 @@ export default function Checkout() {
                 .filter((value): value is number => typeof value === 'number');
 
             const response = usesServerCart && cartItemIds.length === selectedItems.length
-                ? await api.post('/cart/checkout', {
-                    ...payload,
-                    cartItemIds,
-                })
+                ? await api.post('/cart/checkout', { ...payload, cartItemIds })
                 : await api.post('/orders', {
                     ...payload,
                     items: selectedItems.map(item => ({
@@ -197,25 +268,51 @@ export default function Checkout() {
                         <h2 className="display-font text-4xl leading-none">Доставка</h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-5" noValidate>
+
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Имя и фамилия</span>
-                            <input value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <input
+                                value={form.name}
+                                onChange={event => { setForm({ ...form, name: event.target.value }); clearError('name'); }}
+                                className={`w-full border-2 bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.name ? 'border-red-500 text-red-900 bg-red-50' : 'border-[var(--line)]'}`}
+                            />
+                            {errors.name && <span className="text-red-600 font-semibold text-sm mt-2 flex items-center gap-1"><AlertCircle size={16}/>{errors.name}</span>}
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Телефон</span>
-                            <input type="tel" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <input
+                                type="tel"
+                                placeholder="+7 (___) ___-__-__"
+                                value={form.phone}
+                                onChange={event => { setForm({ ...form, phone: event.target.value }); clearError('phone'); }}
+                                className={`w-full border-2 bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.phone ? 'border-red-500 text-red-900 bg-red-50' : 'border-[var(--line)]'}`}
+                            />
+                            {errors.phone && <span className="text-red-600 font-semibold text-sm mt-2 flex items-center gap-1"><AlertCircle size={16}/>{errors.phone}</span>}
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Адрес доставки</span>
-                            <textarea value={form.address} onChange={event => setForm({ ...form, address: event.target.value })} rows={3} className="w-full resize-y border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <div className={`border-2 bg-white focus-within:bg-[var(--sun)]/20 ${errors.address ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}>
+                                <AddressSuggestions
+                                    token={DADATA_API_KEY}
+                                    onChange={(suggestion) => {
+                                        setForm({ ...form, address: suggestion?.value || '' });
+                                        clearError('address');
+                                    }}
+                                    inputProps={{
+                                        placeholder: 'Начните вводить город и улицу...',
+                                        className: `w-full px-5 py-4 text-lg font-bold outline-none bg-transparent ${errors.address ? 'text-red-900' : ''}`,
+                                    }}
+                                />
+                            </div>
+                            {errors.address && <span className="text-red-600 font-semibold text-sm mt-2 flex items-center gap-1"><AlertCircle size={16}/>{errors.address}</span>}
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Способ оплаты</span>
-                            <select value={form.paymentMethod} onChange={event => setForm({ ...form, paymentMethod: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none">
+                            <select value={form.paymentMethod} onChange={event => setForm({ ...form, paymentMethod: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none cursor-pointer focus:bg-[var(--sun)]/20">
                                 <option value="card">Банковской картой</option>
                                 <option value="cash">Наличными при получении</option>
                                 <option value="sbp">СБП</option>
@@ -223,23 +320,60 @@ export default function Checkout() {
                         </label>
 
                         <div className="border-y-2 border-[var(--line)] py-5">
-                            <label className="flex items-center gap-3 font-black">
-                                <input type="checkbox" checked={form.isGift} onChange={event => setForm({ ...form, isGift: event.target.checked })} className="h-5 w-5 accent-[var(--coral)]" />
+                            <label className="flex items-center gap-3 font-black cursor-pointer">
+                                <input type="checkbox" checked={form.isGift} onChange={event => { setForm({ ...form, isGift: event.target.checked }); clearError('giftRecipientName'); }} className="h-5 w-5 accent-[var(--coral)]" />
                                 <Gift className="h-5 w-5 text-[var(--coral)]" />
                                 Купить в подарок
                             </label>
 
                             {form.isGift && (
                                 <div className="mt-5 grid gap-4 md:grid-cols-2">
-                                    <input placeholder="Имя получателя" value={form.giftRecipientName} onChange={event => setForm({ ...form, giftRecipientName: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" required />
-                                    <input placeholder="Email получателя" type="email" value={form.giftRecipientEmail} onChange={event => setForm({ ...form, giftRecipientEmail: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
-                                    <input placeholder="От кого" value={form.giftFromName} onChange={event => setForm({ ...form, giftFromName: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
-                                    <textarea placeholder="Сообщение к подарку" value={form.giftMessage} onChange={event => setForm({ ...form, giftMessage: event.target.value })} rows={3} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none md:col-span-2" />
+                                    <div className="md:col-span-1">
+                                        <input
+                                            placeholder="Имя получателя *"
+                                            value={form.giftRecipientName}
+                                            onChange={event => { setForm({ ...form, giftRecipientName: event.target.value }); clearError('giftRecipientName'); }}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftRecipientName ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftRecipientName && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftRecipientName}</span>}
+                                    </div>
+
+                                    <div className="md:col-span-1">
+                                        <input
+                                            placeholder="Email получателя"
+                                            type="email"
+                                            value={form.giftRecipientEmail}
+                                            onChange={event => { setForm({ ...form, giftRecipientEmail: event.target.value }); clearError('giftRecipientEmail'); }}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftRecipientEmail ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftRecipientEmail && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftRecipientEmail}</span>}
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <input
+                                            placeholder="От кого"
+                                            value={form.giftFromName}
+                                            onChange={event => { setForm({ ...form, giftFromName: event.target.value }); clearError('giftFromName'); }}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftFromName ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftFromName && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftFromName}</span>}
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <textarea
+                                            placeholder="Сообщение к подарку"
+                                            value={form.giftMessage}
+                                            onChange={event => { setForm({ ...form, giftMessage: event.target.value }); clearError('giftMessage'); }}
+                                            rows={3}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftMessage ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftMessage && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftMessage}</span>}
+                                    </div>
                                 </div>
                             )}
                         </div>
 
-                        <button type="submit" disabled={loading} className="w-full border-2 border-[var(--line)] bg-[var(--coral)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60">
+                        <button type="submit" disabled={loading} className="w-full border-2 border-[var(--line)] bg-[var(--coral)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-[#d84a2f] transition-colors">
                             {loading ? 'Оформляем заказ...' : 'Подтвердить заказ'}
                         </button>
                     </form>

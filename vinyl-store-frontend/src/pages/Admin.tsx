@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import { AlertTriangle, Edit, FileText, Plus, RefreshCcw, Search, Shield, Trash2, Upload } from 'lucide-react';
+import { AlertTriangle, Edit, FileText, Plus, RefreshCcw, Search, Shield, Trash2, Upload, Package, AlertCircle } from 'lucide-react';
 import api from '../api/api';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Toast, { type ToastState } from '../components/Toast';
@@ -20,6 +20,19 @@ import {
     type ParsedImportValidationError,
     validateParsedImportRows,
 } from '../utils/adminAlbumImport';
+
+// Добавляем хелпер для цены
+const formatPrice = (value: number) => value.toLocaleString('ru-RU');
+
+// --- ТИПЫ ДЛЯ ЗАКАЗОВ ---
+interface Order {
+    orderID: number;
+    customerName: string;
+    customerPhone: string;
+    totalAmount: number;
+    status: string;
+    orderDate: string;
+}
 
 type CatalogResponse = {
     data: Album[];
@@ -109,15 +122,15 @@ type AlbumFormFieldsProps = {
 };
 
 function AlbumFormFields({
-    form,
-    errors,
-    artists,
-    genres,
-    onChange,
-    submitText,
-    loading,
-    onSubmit,
-}: AlbumFormFieldsProps) {
+                             form,
+                             errors,
+                             artists,
+                             genres,
+                             onChange,
+                             submitText,
+                             loading,
+                             onSubmit,
+                         }: AlbumFormFieldsProps) {
     const inputClass = 'w-full border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20';
 
     return (
@@ -176,7 +189,7 @@ function AlbumFormFields({
                 {errors.description && <div className="mt-2 text-sm font-semibold text-red-700">{errors.description}</div>}
             </label>
 
-            <button type="submit" disabled={loading} className="md:col-span-2 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60">
+            <button type="submit" disabled={loading} className="md:col-span-2 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-gray-800 transition-colors">
                 {loading ? 'Сохраняем...' : submitText}
             </button>
         </form>
@@ -185,13 +198,20 @@ function AlbumFormFields({
 
 export default function Admin() {
     const { isAuthenticated, role } = useAuth();
-    const [activeTab, setActiveTab] = useState<'catalog' | 'import'>('catalog');
+    const [activeTab, setActiveTab] = useState<'catalog' | 'import' | 'orders'>('catalog');
+
+    // Стейты каталога
     const [albums, setAlbums] = useState<Album[]>([]);
     const [artists, setArtists] = useState<Artist[]>([]);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
+    // Стейты заказов
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+
+    // Стейты форм каталога
     const [createForm, setCreateForm] = useState<AdminAlbumForm>(createEmptyAlbumForm());
     const [createErrors, setCreateErrors] = useState<AdminAlbumFormErrors>({});
     const [createLoading, setCreateLoading] = useState(false);
@@ -204,6 +224,7 @@ export default function Admin() {
     const [pendingDeleteAlbum, setPendingDeleteAlbum] = useState<Album | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
+    // Стейты импорта
     const [importRows, setImportRows] = useState<ParsedAlbumImportRow[]>([]);
     const [importValidationErrors, setImportValidationErrors] = useState<ParsedImportValidationError[]>([]);
     const [importFileName, setImportFileName] = useState('');
@@ -220,6 +241,38 @@ export default function Admin() {
     const showToast = (type: ToastState['type'], title: string, description?: string) =>
         setToast({ open: true, type, title, description });
 
+    // --- ФЕТЧ ЗАКАЗОВ ---
+    const fetchOrders = async () => {
+        setOrdersLoading(true);
+        try {
+            const response = await api.get<Order[]>('/orders/all');
+            setOrders(response.data);
+        } catch (error) {
+            showToast('error', 'Ошибка', 'Не удалось загрузить список заказов.');
+        } finally {
+            setOrdersLoading(false);
+        }
+    };
+
+    // Загружаем заказы, когда переключаемся на вкладку "orders"
+    useEffect(() => {
+        if (activeTab === 'orders' && orders.length === 0) {
+            void fetchOrders();
+        }
+    }, [activeTab]);
+
+    // Обработка изменения статуса
+    const handleStatusChange = async (orderId: number, newStatus: string) => {
+        try {
+            await api.put(`/orders/${orderId}/status`, { status: newStatus });
+            setOrders(prev => prev.map(o => o.orderID === orderId ? { ...o, status: newStatus } : o));
+            showToast('success', 'Статус обновлен', `Заказ #${orderId} переведен в статус "${newStatus}"`);
+        } catch (error) {
+            showToast('error', 'Ошибка', 'Не удалось изменить статус заказа');
+        }
+    };
+
+    // --- ФЕТЧ КАТАЛОГА ---
     const fetchAllAlbums = async () => {
         const firstPage = await api.get<CatalogResponse>('/albums', { params: { page: 1, pageSize: 100 } });
         const { data, totalPages } = firstPage.data;
@@ -505,10 +558,10 @@ export default function Admin() {
         <main className="mx-auto max-w-7xl px-5 py-12 md:px-8">
             <div className="mb-10 flex flex-col gap-6 border-b-2 border-[var(--line)] pb-8 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Управление каталогом</div>
+                    <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Управление магазином</div>
                     <h1 className="display-font mt-2 text-6xl leading-none md:text-9xl">Админ-панель</h1>
                     <p className="mt-5 max-w-2xl text-lg leading-7 text-[var(--muted)]">
-                        Здесь можно добавлять и редактировать пластинки, а также загружать данные из CSV или JSON без ручного перебора каждой записи.
+                        Здесь можно управлять заказами, добавлять и редактировать пластинки, а также загружать данные из CSV или JSON.
                     </p>
                 </div>
 
@@ -530,34 +583,109 @@ export default function Admin() {
 
             <div className="mb-8 flex flex-wrap gap-3">
                 <button
+                    onClick={() => setActiveTab('orders')}
+                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] flex items-center gap-2 transition-colors ${
+                        activeTab === 'orders' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)] hover:bg-gray-100'
+                    }`}
+                >
+                    <Package size={18} /> Заказы
+                </button>
+                <button
                     onClick={() => setActiveTab('catalog')}
-                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] ${
-                        activeTab === 'catalog' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)]'
+                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] transition-colors ${
+                        activeTab === 'catalog' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)] hover:bg-gray-100'
                     }`}
                 >
                     Каталог
                 </button>
                 <button
                     onClick={() => setActiveTab('import')}
-                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] ${
-                        activeTab === 'import' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)]'
+                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] transition-colors ${
+                        activeTab === 'import' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)] hover:bg-gray-100'
                     }`}
                 >
                     Импорт данных
                 </button>
                 <button
-                    onClick={() => void loadData()}
-                    className="inline-flex items-center gap-2 border-2 border-[var(--line)] bg-[var(--sun)] px-5 py-3 font-black uppercase tracking-[0.14em]"
+                    onClick={() => {
+                        if (activeTab === 'orders') void fetchOrders();
+                        else void loadData();
+                    }}
+                    className="inline-flex items-center gap-2 border-2 border-[var(--line)] bg-[var(--sun)] px-5 py-3 font-black uppercase tracking-[0.14em] hover:bg-[#e5b32e] transition-colors ml-auto"
                 >
                     <RefreshCcw className="h-4 w-4" /> Обновить
                 </button>
             </div>
 
-            {loading ? (
+            {/* ВКЛАДКА: ЗАКАЗЫ */}
+            {activeTab === 'orders' ? (
+                <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                    <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <h2 className="display-font text-4xl leading-none">Список заказов</h2>
+                            <p className="mt-2 text-[var(--muted)]">Управляйте статусами доставок. Завершенные заказы блокируются от изменений.</p>
+                        </div>
+                    </div>
+
+                    {ordersLoading ? (
+                        <div className="py-10 text-center font-bold">Загрузка заказов...</div>
+                    ) : (
+                        <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
+                            <div className="hidden grid-cols-[80px_1fr_1.5fr_1fr_1.2fr] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
+                                <span>ID</span>
+                                <span>Дата</span>
+                                <span>Клиент</span>
+                                <span>Сумма</span>
+                                <span>Статус</span>
+                            </div>
+
+                            {orders.length > 0 ? orders.map(order => {
+                                const isLocked = order.status === 'Completed' || order.status === 'Cancelled';
+                                return (
+                                    <div key={order.orderID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[80px_1fr_1.5fr_1fr_1.2fr] md:items-center">
+                                        <div className="font-black text-lg">#{order.orderID}</div>
+                                        <div className="text-sm font-semibold text-[var(--muted)]">{new Date(order.orderDate).toLocaleDateString('ru-RU')}</div>
+                                        <div>
+                                            <div className="font-bold">{order.customerName}</div>
+                                            <div className="text-sm text-[var(--muted)] mt-1">{order.customerPhone}</div>
+                                        </div>
+                                        <div className="font-black tabular-nums">{formatPrice(order.totalAmount)} ₽</div>
+                                        <div>
+                                            <select
+                                                value={order.status}
+                                                onChange={(e) => void handleStatusChange(order.orderID, e.target.value)}
+                                                disabled={isLocked}
+                                                className={`w-full border-2 px-3 py-3 font-bold outline-none cursor-pointer transition-colors ${
+                                                    isLocked
+                                                        ? 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                        : 'border-[var(--line)] bg-white hover:bg-gray-50 focus:border-[var(--coral)]'
+                                                }`}
+                                            >
+                                                <option value="Pending">В ожидании</option>
+                                                <option value="Processing">В сборке</option>
+                                                <option value="Shipped">В пути</option>
+                                                <option value="Completed">Выполнен</option>
+                                                <option value="Cancelled">Отменен</option>
+                                            </select>
+                                            {isLocked && <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-red-600"><AlertCircle size={14}/> Заблокировано</div>}
+                                        </div>
+                                    </div>
+                                );
+                            }) : (
+                                <div className="px-4 py-12 text-center font-semibold text-[var(--muted)] bg-white">
+                                    Заказов пока нет.
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+            ) : loading ? (
+                // СОСТОЯНИЕ ЗАГРУЗКИ (Для Каталога и Импорта)
                 <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-8 font-bold">
                     Загружаем данные каталога...
                 </div>
             ) : activeTab === 'catalog' ? (
+                // ВКЛАДКА: КАТАЛОГ
                 <div className="space-y-10">
                     <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex items-center gap-3">
@@ -609,7 +737,7 @@ export default function Admin() {
                             </div>
 
                             {filteredAlbums.length > 0 ? filteredAlbums.map(album => (
-                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center">
+                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center hover:bg-gray-50 transition-colors">
                                     <div>
                                         <div className="font-black">{album.title}</div>
                                         <div className="mt-1 text-sm text-[var(--muted)] line-clamp-2">{album.description || 'Без описания'}</div>
@@ -618,12 +746,12 @@ export default function Admin() {
                                     <div className="text-sm font-semibold">{album.genre?.name || 'Не указан'}</div>
                                     <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
                                     <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
-                                    <div className="text-sm font-semibold">{album.stockQuantity} шт.</div>
+                                    <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>{album.stockQuantity} шт.</div>
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEditModal(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--sun)]" title="Редактировать">
+                                        <button onClick={() => openEditModal(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--sun)] hover:bg-[#e5b32e] transition-colors" title="Редактировать">
                                             <Edit className="h-4 w-4" />
                                         </button>
-                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700" title="Удалить">
+                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -637,6 +765,7 @@ export default function Admin() {
                     </section>
                 </div>
             ) : (
+                // ВКЛАДКА: ИМПОРТ ДАННЫХ
                 <div className="space-y-8">
                     <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex items-center gap-3">
@@ -649,32 +778,32 @@ export default function Admin() {
 
                         <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
                             <div className="space-y-5">
-                                <label className="flex cursor-pointer items-center justify-center border-2 border-dashed border-[var(--line)] bg-white px-6 py-10 text-center">
+                                <label className="flex cursor-pointer items-center justify-center border-2 border-dashed border-[var(--line)] bg-white px-6 py-10 text-center hover:bg-gray-50 transition-colors">
                                     <div>
                                         <FileText className="mx-auto h-10 w-10 text-[var(--coral)]" />
                                         <div className="mt-4 font-black uppercase tracking-[0.14em]">Выбрать CSV или JSON файл</div>
                                         <div className="mt-2 text-sm text-[var(--muted)]">Можно повторно загружать файл после правок.</div>
-                                        {importFileName && <div className="mt-4 text-sm font-semibold text-[var(--blue)]">{importFileName}</div>}
+                                        {importFileName && <div className="mt-4 text-sm font-bold text-[var(--blue)] bg-blue-50 py-2 border-2 border-blue-200">{importFileName}</div>}
                                     </div>
                                     <input type="file" accept=".csv,.json,application/json,text/csv" className="hidden" onChange={event => void handleImportFileChange(event)} />
                                 </label>
 
                                 <div className="grid gap-3 md:grid-cols-3">
-                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold">
+                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
                                         <input type="checkbox" checked={importOptions.updateExisting} onChange={event => setImportOptions(previous => ({ ...previous, updateExisting: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
                                         <span>Обновлять существующие альбомы</span>
                                     </label>
-                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold">
+                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
                                         <input type="checkbox" checked={importOptions.createMissingArtists} onChange={event => setImportOptions(previous => ({ ...previous, createMissingArtists: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
                                         <span>Создавать новых артистов</span>
                                     </label>
-                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold">
+                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
                                         <input type="checkbox" checked={importOptions.createMissingGenres} onChange={event => setImportOptions(previous => ({ ...previous, createMissingGenres: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
                                         <span>Создавать новые жанры</span>
                                     </label>
                                 </div>
 
-                                <button onClick={() => void handleImportAlbums()} disabled={importLoading || importRows.length === 0} className="inline-flex items-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-4 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60">
+                                <button onClick={() => void handleImportAlbums()} disabled={importLoading || importRows.length === 0} className="inline-flex items-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-4 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-gray-800 transition-colors">
                                     <Upload className="h-5 w-5" />
                                     {importLoading ? 'Импортируем...' : 'Запустить импорт'}
                                 </button>
@@ -788,15 +917,16 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                 </div>
             )}
 
+            {/* МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ АЛЬБОМА */}
             {editingAlbum && editForm && (
-                <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-6">
-                    <div className="max-h-[92vh] w-full max-w-4xl overflow-auto bg-[var(--paper-soft)] p-6 poster-border md:p-8">
-                        <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm">
+                    <div className="max-h-[92vh] w-full max-w-4xl overflow-auto bg-[var(--paper-soft)] p-6 poster-border md:p-8 relative border-2 border-[var(--line)]">
+                        <div className="mb-6 flex items-center justify-between gap-4 border-b-2 border-[var(--line)] pb-4">
                             <div>
                                 <div className="text-xs font-black uppercase tracking-[0.18em] text-[var(--coral)]">Редактирование</div>
                                 <h2 className="display-font mt-2 text-5xl leading-none">Изменить альбом</h2>
                             </div>
-                            <button onClick={() => setEditingAlbum(null)} className="border-2 border-[var(--line)] bg-white px-4 py-3 font-black uppercase tracking-[0.12em]">
+                            <button onClick={() => setEditingAlbum(null)} className="border-2 border-[var(--line)] bg-white px-4 py-3 font-black uppercase tracking-[0.12em] hover:bg-gray-100 transition-colors">
                                 Закрыть
                             </button>
                         </div>
@@ -815,6 +945,7 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                 </div>
             )}
 
+            {/* ДИАЛОГ УДАЛЕНИЯ АЛЬБОМА */}
             <ConfirmDialog
                 open={Boolean(pendingDeleteAlbum)}
                 title="Удалить альбом?"

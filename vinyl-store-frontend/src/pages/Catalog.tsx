@@ -4,6 +4,8 @@ import type { Album, Artist, Genre } from '../types';
 import AlbumCard from '../components/AlbumCard';
 import { AlertTriangle, ArrowDown, Disc3, Filter, Package, Search, Truck, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import PopularAlbums from '../components/PopularAlbums';
+import WeeklyShowcase from '../components/WeeklyShowcase';
 
 const CATALOG_PAGE_SIZE = 100;
 
@@ -14,28 +16,6 @@ type CatalogResponse = {
     pageSize: number;
     totalPages: number;
 };
-
-const makeDemoCover = (title: string, artist: string, seed: number) => {
-    const palettes = [
-        ['#f05a3b', '#f4c84b', '#15110f'],
-        ['#2e5f8f', '#9ed8c3', '#15110f'],
-        ['#15110f', '#f4eadf', '#f05a3b'],
-        ['#9ed8c3', '#f4c84b', '#2e5f8f'],
-        ['#f4c84b', '#f05a3b', '#15110f'],
-        ['#f4eadf', '#2e5f8f', '#15110f'],
-    ];
-    const [bg, accent, ink] = palettes[seed % palettes.length];
-    const safeTitle = title.replace(/[<&>"]/g, '');
-    const safeArtist = artist.replace(/[<&>"]/g, '');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900"><rect width="900" height="900" fill="${bg}"/><circle cx="450" cy="450" r="292" fill="${accent}" stroke="${ink}" stroke-width="24"/><circle cx="450" cy="450" r="92" fill="${bg}" stroke="${ink}" stroke-width="18"/><path d="M82 112H818M82 788H818" stroke="${ink}" stroke-width="18"/><text x="82" y="216" font-family="Arial Black, Arial" font-size="72" font-weight="900" fill="${ink}">${safeTitle.slice(0, 16)}</text><text x="82" y="730" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="8" fill="${ink}">${safeArtist.slice(0, 22).toUpperCase()}</text></svg>`;
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-};
-
-const fallbackShowcase = [
-    { id: 101, title: 'Blue Room', artist: 'Jazz Archive', imageURL: undefined, seed: 1 },
-    { id: 102, title: 'Night Press', artist: 'Indie Select', imageURL: undefined, seed: 2 },
-    { id: 103, title: 'Soul Cuts', artist: 'Vinyl Store', imageURL: undefined, seed: 3 },
-];
 
 const serviceCards = [
     {
@@ -70,6 +50,7 @@ export default function Catalog() {
     const [loadError, setLoadError] = useState<string | null>(null);
     const { isAuthenticated } = useAuth();
 
+    // 1. Хук загрузки всех данных
     useEffect(() => {
         const fetchAllAlbums = async () => {
             const firstPage = await api.get<CatalogResponse>('/albums', {
@@ -119,6 +100,7 @@ export default function Catalog() {
         void fetchData();
     }, []);
 
+    // 2. Хук загрузки рекомендаций
     useEffect(() => {
         const fetchRecs = async () => {
             if (!isAuthenticated) {
@@ -140,17 +122,9 @@ export default function Catalog() {
         void fetchRecs();
     }, [isAuthenticated]);
 
+    // 3. Хук фильтрации и поиска
     useEffect(() => {
         let result = [...albums];
-
-        if (search) {
-            const term = search.toLowerCase();
-            result = result.filter(album =>
-                album.title.toLowerCase().includes(term) ||
-                album.artist?.name.toLowerCase().includes(term) ||
-                album.genre?.name.toLowerCase().includes(term)
-            );
-        }
 
         if (selectedGenre) {
             result = result.filter(album => album.genreID === selectedGenre);
@@ -158,6 +132,34 @@ export default function Catalog() {
 
         if (selectedArtist) {
             result = result.filter(album => album.artistID === selectedArtist);
+        }
+
+        if (search.trim()) {
+            const term = search.trim();
+            const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const wordBoundaryRegex = new RegExp(`(^|[\\s\\-.,()/])${escapedTerm}`, 'i');
+
+            result = result.filter(album => {
+                const title = album.title || '';
+                const artistName = album.artist?.name || '';
+                return wordBoundaryRegex.test(title) || wordBoundaryRegex.test(artistName);
+            });
+
+            const termLower = term.toLowerCase();
+            result.sort((a, b) => {
+                const titleA = a.title ? a.title.toLowerCase().trim() : '';
+                const artistA = a.artist?.name ? a.artist.name.toLowerCase().trim() : '';
+                const titleB = b.title ? b.title.toLowerCase().trim() : '';
+                const artistB = b.artist?.name ? b.artist.name.toLowerCase().trim() : '';
+
+                const aStarts = titleA.startsWith(termLower) || artistA.startsWith(termLower);
+                const bStarts = titleB.startsWith(termLower) || artistB.startsWith(termLower);
+
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+
+                return titleA.localeCompare(titleB);
+            });
         }
 
         setFiltered(result);
@@ -184,16 +186,6 @@ export default function Catalog() {
     const genreLabels = genres.length > 0
         ? genres.slice(0, 5).map(genre => genre.name)
         : ['Jazz', 'Rock', 'Soul', 'Hip-hop', 'Electronic'];
-
-    const showcaseRecords = albums.length > 0
-        ? albums.slice(0, 3).map(album => ({
-            id: album.albumID,
-            title: album.title,
-            artist: album.artist?.name || 'Vinyl Store',
-            imageURL: album.imageURL,
-            seed: album.albumID,
-        }))
-        : fallbackShowcase;
 
     return (
         <main>
@@ -234,30 +226,9 @@ export default function Catalog() {
                         </div>
                     </div>
 
+                    {/* ДИНАМИЧЕСКАЯ ВИТРИНА НЕДЕЛИ */}
                     <div className="lg:col-span-5 lg:self-end">
-                        <div className="poster-border rotate-1 bg-[var(--paper-soft)] p-5">
-                            <div className="border-b-2 border-[var(--line)] pb-4 text-xs font-black uppercase tracking-[0.18em] text-[var(--coral)]">
-                                Витрина недели
-                            </div>
-                            <div className="grid grid-cols-3 gap-3 pt-5">
-                                {showcaseRecords.map((record, index) => (
-                                    <img
-                                        key={record.id}
-                                        src={record.imageURL || makeDemoCover(record.title, record.artist, record.seed)}
-                                        alt={record.title}
-                                        onError={(event) => {
-                                            event.currentTarget.onerror = null;
-                                            event.currentTarget.src = makeDemoCover(record.title, record.artist, record.seed);
-                                        }}
-                                        className={`aspect-square w-full border-2 border-[var(--line)] object-cover ${index === 1 ? 'translate-y-8' : ''}`}
-                                    />
-                                ))}
-                            </div>
-                            <p className="mt-10 border-t-2 border-[var(--line)] pt-4 text-sm font-bold leading-6 text-[var(--muted)]">
-                                Каждая позиция в каталоге выглядит как полноценный релиз: обложка, артист, жанр,
-                                год и понятное описание вместо пустой заглушки.
-                            </p>
-                        </div>
+                        <WeeklyShowcase />
                     </div>
                 </div>
             </section>
@@ -279,6 +250,9 @@ export default function Catalog() {
                         <span>{loadError}</span>
                     </div>
                 )}
+
+                {/* ХИТ-ПАРАД ПОПУЛЯРНЫХ ДИСКОВ */}
+                <PopularAlbums />
 
                 {isAuthenticated && (
                     <div className="mb-12 border-y-2 border-[var(--line)] py-8">
@@ -320,7 +294,7 @@ export default function Catalog() {
                             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--coral)]" />
                             <input
                                 type="text"
-                                placeholder="Например: Kind of Blue, Radiohead, trip-hop"
+                                placeholder="Например: Kind of Blue, Radiohead"
                                 value={search}
                                 onChange={event => setSearch(event.target.value)}
                                 className="h-13 w-full border-2 border-[var(--line)] bg-white py-3 pl-12 pr-4 text-base font-bold outline-none focus:bg-[var(--sun)]/20"
@@ -330,7 +304,7 @@ export default function Catalog() {
                         <select
                             value={selectedGenre || ''}
                             onChange={event => setSelectedGenre(event.target.value ? Number(event.target.value) : null)}
-                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none"
+                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none cursor-pointer"
                         >
                             <option value="">Все жанры</option>
                             {genres.map(genre => <option key={genre.genreID} value={genre.genreID}>{genre.name}</option>)}
@@ -339,7 +313,7 @@ export default function Catalog() {
                         <select
                             value={selectedArtist || ''}
                             onChange={event => setSelectedArtist(event.target.value ? Number(event.target.value) : null)}
-                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none"
+                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none cursor-pointer"
                         >
                             <option value="">Все артисты</option>
                             {artists.map(artist => <option key={artist.artistID} value={artist.artistID}>{artist.name}</option>)}

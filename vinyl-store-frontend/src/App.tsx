@@ -95,6 +95,7 @@ export default function App() {
                                     <Route path="/favorites" element={<Suspense fallback={<Loader />}><Favorites /></Suspense>} />
                                     <Route path="/admin" element={<Suspense fallback={<Loader />}><Admin /></Suspense>} />
                                     <Route path="/album/:id" element={<Suspense fallback={<Loader />}><AlbumDetail /></Suspense>} />
+
                                 </Routes>
                             </main>
                             <Footer />
