@@ -63,39 +63,19 @@ const fieldLabels: Record<keyof AdminAlbumForm, string> = {
 const hasFormErrors = (errors: AdminAlbumFormErrors) => Object.keys(errors).length > 0;
 
 const getFirstApiErrorMessage = (payload: unknown) => {
-    if (!payload || typeof payload !== 'object') {
-        return null;
-    }
-
-    const data = payload as {
-        message?: string;
-        errors?: Record<string, string[]>;
-    };
-
-    if (data.message) {
-        return data.message;
-    }
-
+    if (!payload || typeof payload !== 'object') return null;
+    const data = payload as { message?: string; errors?: Record<string, string[]> };
+    if (data.message) return data.message;
     const firstFieldErrors = Object.values(data.errors ?? {}).flat();
     return firstFieldErrors[0] ?? null;
 };
 
 const mapApiValidationErrors = (payload: unknown): AdminAlbumFormErrors => {
-    if (!payload || typeof payload !== 'object') {
-        return {};
-    }
-
-    const data = payload as {
-        errors?: Record<string, string[]>;
-    };
-
-    if (!data.errors) {
-        return {};
-    }
-
+    if (!payload || typeof payload !== 'object') return {};
+    const data = payload as { errors?: Record<string, string[]> };
+    if (!data.errors) return {};
     const entries = Object.entries(data.errors).map(([key, value]) => [key.toLowerCase(), value[0] ?? '']);
     const errorsMap = Object.fromEntries(entries);
-
     return {
         title: errorsMap.title,
         artistID: errorsMap.artistid,
@@ -108,6 +88,7 @@ const mapApiValidationErrors = (payload: unknown): AdminAlbumFormErrors => {
     };
 };
 
+// Добавлен новый проп: originalStock
 type AlbumFormFieldsProps = {
     form: AdminAlbumForm;
     errors: AdminAlbumFormErrors;
@@ -117,6 +98,7 @@ type AlbumFormFieldsProps = {
     submitText: string;
     loading: boolean;
     onSubmit: (event: FormEvent) => void;
+    originalStock?: number;
 };
 
 function AlbumFormFields({
@@ -128,6 +110,7 @@ function AlbumFormFields({
                              submitText,
                              loading,
                              onSubmit,
+                             originalStock // Получаем оригинальный остаток, если это форма редактирования
                          }: AlbumFormFieldsProps) {
     const inputClass = 'w-full border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20';
 
@@ -169,9 +152,20 @@ function AlbumFormFields({
                 {errors.price && <div className="mt-2 text-sm font-semibold text-red-700">{errors.price}</div>}
             </label>
 
+            {/* ИЗМЕНЕНО ПОЛЕ ОСТАТКА НА СКЛАДЕ */}
             <label>
-                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">{fieldLabels.stockQuantity}</span>
-                <input type="number" value={form.stockQuantity} onChange={event => onChange('stockQuantity', event.target.value)} className={inputClass} />
+                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">
+                    {originalStock !== undefined
+                        ? `Добавить на склад (Сейчас в наличии: ${originalStock} шт.)`
+                        : fieldLabels.stockQuantity}
+                </span>
+                <input
+                    type="number"
+                    value={form.stockQuantity}
+                    onChange={event => onChange('stockQuantity', event.target.value)}
+                    className={inputClass}
+                    placeholder={originalStock !== undefined ? "Например: 5 (или -2 для списания)" : ""}
+                />
                 {errors.stockQuantity && <div className="mt-2 text-sm font-semibold text-red-700">{errors.stockQuantity}</div>}
             </label>
 
@@ -218,9 +212,6 @@ export default function Admin() {
 
     const [pendingDeleteAlbum, setPendingDeleteAlbum] = useState<Album | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
-
-    // Стейт для инпутов быстрого пополнения склада { [albumID]: string }
-    const [addStockInputs, setAddStockInputs] = useState<Record<number, string>>({});
 
     const [importRows, setImportRows] = useState<ParsedAlbumImportRow[]>([]);
     const [importValidationErrors, setImportValidationErrors] = useState<ParsedImportValidationError[]>([]);
@@ -269,20 +260,12 @@ export default function Admin() {
     const fetchAllAlbums = async () => {
         const firstPage = await api.get<CatalogResponse>('/albums', { params: { page: 1, pageSize: 100 } });
         const { data, totalPages } = firstPage.data;
-
-        if (totalPages <= 1) {
-            return data;
-        }
-
+        if (totalPages <= 1) return data;
         const remainingPages = await Promise.all(
             Array.from({ length: totalPages - 1 }, (_, index) =>
                 api.get<CatalogResponse>('/albums', { params: { page: index + 2, pageSize: 100 } }))
         );
-
-        return [
-            ...data,
-            ...remainingPages.flatMap(response => response.data.data),
-        ];
+        return [...data, ...remainingPages.flatMap(response => response.data.data)];
     };
 
     const loadData = async () => {
@@ -315,9 +298,7 @@ export default function Admin() {
 
     const filteredAlbums = useMemo(() => {
         const term = search.trim().toLowerCase();
-        if (!term) {
-            return albums;
-        }
+        if (!term) return albums;
         return albums.filter(album =>
             album.title.toLowerCase().includes(term) ||
             album.artist?.name.toLowerCase().includes(term) ||
@@ -373,7 +354,12 @@ export default function Admin() {
 
     const openEditModal = (album: Album) => {
         setEditingAlbum(album);
-        setEditForm(albumToAdminForm(album));
+
+        const form = albumToAdminForm(album);
+        // ИСПРАВЛЕНИЕ: Передаем '0' как строку, а не как число
+        form.stockQuantity = '0';
+
+        setEditForm(form);
         setEditErrors({});
     };
 
@@ -381,18 +367,27 @@ export default function Admin() {
         event.preventDefault();
         if (!editingAlbum || !editForm) return;
 
-        const validationErrors = validateAdminAlbumForm(editForm, artists, genres);
+        const addedAmount = Number(editForm.stockQuantity) || 0;
+        const finalStockQuantity = editingAlbum.stockQuantity + addedAmount;
+
+        // ИСПРАВЛЕНИЕ: Превращаем итоговое число обратно в строку с помощью .toString()
+        const formToValidate = {
+            ...editForm,
+            stockQuantity: finalStockQuantity.toString()
+        };
+
+        const validationErrors = validateAdminAlbumForm(formToValidate, artists, genres);
         setEditErrors(validationErrors);
 
         if (hasFormErrors(validationErrors)) {
-            showToast('error', 'Исправьте форму', 'Редактирование нельзя сохранить с некорректными данными.');
+            showToast('error', 'Ошибка остатков', 'Итоговый остаток на складе не может быть меньше 0.');
             return;
         }
 
         setEditLoading(true);
         try {
-            await api.put(`/albums/${editingAlbum.albumID}`, buildAlbumPayload(editForm));
-            showToast('success', 'Изменения сохранены', 'Карточка альбома обновлена.');
+            await api.put(`/albums/${editingAlbum.albumID}`, buildAlbumPayload(formToValidate));
+            showToast('success', 'Изменения сохранены', 'Карточка альбома и остатки обновлены.');
             setEditingAlbum(null);
             setEditForm(null);
             await loadData();
@@ -403,33 +398,6 @@ export default function Admin() {
             showToast('error', 'Не удалось сохранить изменения', getFirstApiErrorMessage(payload) || 'Попробуйте еще раз.');
         } finally {
             setEditLoading(false);
-        }
-    };
-
-    // --- ФУНКЦИЯ ДОБАВЛЕНИЯ КОЛИЧЕСТВА ---
-    const handleAddStock = async (albumId: number) => {
-        const val = parseInt(addStockInputs[albumId] || '0', 10);
-
-        if (isNaN(val) || val <= 0) {
-            showToast('error', 'Ошибка', 'Введите корректное число дисков для добавления.');
-            return;
-        }
-
-        try {
-            const response = await api.patch<{message: string, newStockQuantity: number}>(`/albums/${albumId}/add-stock`, {
-                quantityToAdd: val
-            });
-
-            // Обновляем количество локально, без полного запроса к API каталога
-            setAlbums(prev => prev.map(a =>
-                a.albumID === albumId ? { ...a, stockQuantity: response.data.newStockQuantity } : a
-            ));
-
-            // Очищаем инпут
-            setAddStockInputs(prev => ({ ...prev, [albumId]: '' }));
-            showToast('success', 'Остаток пополнен', response.data.message);
-        } catch (error) {
-            showToast('error', 'Не удалось пополнить', 'Произошла ошибка при обновлении базы данных.');
         }
     };
 
@@ -705,19 +673,18 @@ export default function Admin() {
                         </div>
 
                         <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
-                            {/* ИЗМЕНЕНА РАЗМЕТКА СЕТКИ ДЛЯ ВМЕЩЕНИЯ ИНПУТОВ ПОПОЛНЕНИЯ */}
-                            <div className="hidden grid-cols-[2fr_1.2fr_0.8fr_0.6fr_0.8fr_160px_100px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
+                            <div className="hidden grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
                                 <span>Альбом</span>
                                 <span>Артист</span>
                                 <span>Жанр</span>
                                 <span>Год</span>
                                 <span>Цена</span>
-                                <span>Склад (+пополнение)</span>
+                                <span>Остаток</span>
                                 <span className="text-right">Действия</span>
                             </div>
 
                             {filteredAlbums.length > 0 ? filteredAlbums.map(album => (
-                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2fr_1.2fr_0.8fr_0.6fr_0.8fr_160px_100px] md:items-center hover:bg-gray-50 transition-colors">
+                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center hover:bg-gray-50 transition-colors">
                                     <div>
                                         <div className="font-black">{album.title}</div>
                                         <div className="mt-1 text-sm text-[var(--muted)] line-clamp-2">{album.description || 'Без описания'}</div>
@@ -726,33 +693,10 @@ export default function Admin() {
                                     <div className="text-sm font-semibold">{album.genre?.name || 'Не указан'}</div>
                                     <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
                                     <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
-
-                                    {/* БЛОК С ОСТАТКОМ И КНОПКОЙ ПОПОЛНЕНИЯ */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>
-                                            {album.stockQuantity} шт.
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                placeholder="+шт"
-                                                value={addStockInputs[album.albumID] || ''}
-                                                onChange={e => setAddStockInputs(prev => ({...prev, [album.albumID]: e.target.value}))}
-                                                className="w-14 border-2 border-r-0 border-[var(--line)] px-1.5 py-1 text-xs font-bold outline-none focus:bg-[var(--sun)]/20"
-                                            />
-                                            <button
-                                                onClick={() => void handleAddStock(album.albumID)}
-                                                className="flex h-[26px] items-center bg-[var(--sun)] border-2 border-[var(--line)] px-2 hover:bg-[#e5b32e] transition-colors"
-                                                title="Прибавить к остатку"
-                                            >
-                                                <Plus className="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>{album.stockQuantity} шт.</div>
 
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-gray-100 transition-colors" title="Полное редактирование">
+                                        <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-[var(--sun)] transition-colors" title="Полное редактирование">
                                             <Edit className="h-4 w-4" />
                                         </button>
                                         <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
@@ -944,6 +888,7 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                             onSubmit={handleUpdateAlbum}
                             submitText="Сохранить изменения"
                             loading={editLoading}
+                            originalStock={editingAlbum.stockQuantity}
                         />
                     </div>
                 </div>
