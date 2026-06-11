@@ -21,10 +21,8 @@ import {
     validateParsedImportRows,
 } from '../utils/adminAlbumImport';
 
-// Добавляем хелпер для цены
 const formatPrice = (value: number) => value.toLocaleString('ru-RU');
 
-// --- ТИПЫ ДЛЯ ЗАКАЗОВ ---
 interface Order {
     orderID: number;
     customerName: string;
@@ -200,18 +198,15 @@ export default function Admin() {
     const { isAuthenticated, role } = useAuth();
     const [activeTab, setActiveTab] = useState<'catalog' | 'import' | 'orders'>('catalog');
 
-    // Стейты каталога
     const [albums, setAlbums] = useState<Album[]>([]);
     const [artists, setArtists] = useState<Artist[]>([]);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
-    // Стейты заказов
     const [orders, setOrders] = useState<Order[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
 
-    // Стейты форм каталога
     const [createForm, setCreateForm] = useState<AdminAlbumForm>(createEmptyAlbumForm());
     const [createErrors, setCreateErrors] = useState<AdminAlbumFormErrors>({});
     const [createLoading, setCreateLoading] = useState(false);
@@ -224,7 +219,9 @@ export default function Admin() {
     const [pendingDeleteAlbum, setPendingDeleteAlbum] = useState<Album | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    // Стейты импорта
+    // Стейт для инпутов быстрого пополнения склада { [albumID]: string }
+    const [addStockInputs, setAddStockInputs] = useState<Record<number, string>>({});
+
     const [importRows, setImportRows] = useState<ParsedAlbumImportRow[]>([]);
     const [importValidationErrors, setImportValidationErrors] = useState<ParsedImportValidationError[]>([]);
     const [importFileName, setImportFileName] = useState('');
@@ -241,7 +238,6 @@ export default function Admin() {
     const showToast = (type: ToastState['type'], title: string, description?: string) =>
         setToast({ open: true, type, title, description });
 
-    // --- ФЕТЧ ЗАКАЗОВ ---
     const fetchOrders = async () => {
         setOrdersLoading(true);
         try {
@@ -254,14 +250,12 @@ export default function Admin() {
         }
     };
 
-    // Загружаем заказы, когда переключаемся на вкладку "orders"
     useEffect(() => {
         if (activeTab === 'orders' && orders.length === 0) {
             void fetchOrders();
         }
     }, [activeTab]);
 
-    // Обработка изменения статуса
     const handleStatusChange = async (orderId: number, newStatus: string) => {
         try {
             await api.put(`/orders/${orderId}/status`, { status: newStatus });
@@ -272,7 +266,6 @@ export default function Admin() {
         }
     };
 
-    // --- ФЕТЧ КАТАЛОГА ---
     const fetchAllAlbums = async () => {
         const firstPage = await api.get<CatalogResponse>('/albums', { params: { page: 1, pageSize: 100 } });
         const { data, totalPages } = firstPage.data;
@@ -294,7 +287,6 @@ export default function Admin() {
 
     const loadData = async () => {
         setLoading(true);
-
         try {
             const [loadedAlbums, artistsResponse, genresResponse] = await Promise.all([
                 fetchAllAlbums(),
@@ -326,7 +318,6 @@ export default function Admin() {
         if (!term) {
             return albums;
         }
-
         return albums.filter(album =>
             album.title.toLowerCase().includes(term) ||
             album.artist?.name.toLowerCase().includes(term) ||
@@ -344,10 +335,7 @@ export default function Admin() {
     };
 
     const updateEditField = <K extends keyof AdminAlbumForm>(field: K, value: AdminAlbumForm[K]) => {
-        if (!editForm) {
-            return;
-        }
-
+        if (!editForm) return;
         setEditForm(previous => previous ? { ...previous, [field]: value } : previous);
         setEditErrors(previous => {
             const next = { ...previous };
@@ -358,7 +346,6 @@ export default function Admin() {
 
     const handleCreateAlbum = async (event: FormEvent) => {
         event.preventDefault();
-
         const validationErrors = validateAdminAlbumForm(createForm, artists, genres);
         setCreateErrors(validationErrors);
 
@@ -368,7 +355,6 @@ export default function Admin() {
         }
 
         setCreateLoading(true);
-
         try {
             await api.post('/albums', buildAlbumPayload(createForm));
             showToast('success', 'Альбом добавлен', 'Новая запись появилась в каталоге.');
@@ -378,10 +364,7 @@ export default function Admin() {
         } catch (error) {
             const payload = (error as { response?: { data?: unknown } }).response?.data;
             const apiErrors = mapApiValidationErrors(payload);
-            if (hasFormErrors(apiErrors)) {
-                setCreateErrors(apiErrors);
-            }
-
+            if (hasFormErrors(apiErrors)) setCreateErrors(apiErrors);
             showToast('error', 'Не удалось создать альбом', getFirstApiErrorMessage(payload) || 'Попробуйте еще раз.');
         } finally {
             setCreateLoading(false);
@@ -396,10 +379,7 @@ export default function Admin() {
 
     const handleUpdateAlbum = async (event: FormEvent) => {
         event.preventDefault();
-
-        if (!editingAlbum || !editForm) {
-            return;
-        }
+        if (!editingAlbum || !editForm) return;
 
         const validationErrors = validateAdminAlbumForm(editForm, artists, genres);
         setEditErrors(validationErrors);
@@ -410,7 +390,6 @@ export default function Admin() {
         }
 
         setEditLoading(true);
-
         try {
             await api.put(`/albums/${editingAlbum.albumID}`, buildAlbumPayload(editForm));
             showToast('success', 'Изменения сохранены', 'Карточка альбома обновлена.');
@@ -420,23 +399,43 @@ export default function Admin() {
         } catch (error) {
             const payload = (error as { response?: { data?: unknown } }).response?.data;
             const apiErrors = mapApiValidationErrors(payload);
-            if (hasFormErrors(apiErrors)) {
-                setEditErrors(apiErrors);
-            }
-
+            if (hasFormErrors(apiErrors)) setEditErrors(apiErrors);
             showToast('error', 'Не удалось сохранить изменения', getFirstApiErrorMessage(payload) || 'Попробуйте еще раз.');
         } finally {
             setEditLoading(false);
         }
     };
 
-    const confirmDeleteAlbum = async () => {
-        if (!pendingDeleteAlbum) {
+    // --- ФУНКЦИЯ ДОБАВЛЕНИЯ КОЛИЧЕСТВА ---
+    const handleAddStock = async (albumId: number) => {
+        const val = parseInt(addStockInputs[albumId] || '0', 10);
+
+        if (isNaN(val) || val <= 0) {
+            showToast('error', 'Ошибка', 'Введите корректное число дисков для добавления.');
             return;
         }
 
-        setDeleteLoading(true);
+        try {
+            const response = await api.patch<{message: string, newStockQuantity: number}>(`/albums/${albumId}/add-stock`, {
+                quantityToAdd: val
+            });
 
+            // Обновляем количество локально, без полного запроса к API каталога
+            setAlbums(prev => prev.map(a =>
+                a.albumID === albumId ? { ...a, stockQuantity: response.data.newStockQuantity } : a
+            ));
+
+            // Очищаем инпут
+            setAddStockInputs(prev => ({ ...prev, [albumId]: '' }));
+            showToast('success', 'Остаток пополнен', response.data.message);
+        } catch (error) {
+            showToast('error', 'Не удалось пополнить', 'Произошла ошибка при обновлении базы данных.');
+        }
+    };
+
+    const confirmDeleteAlbum = async () => {
+        if (!pendingDeleteAlbum) return;
+        setDeleteLoading(true);
         try {
             await api.delete(`/albums/${pendingDeleteAlbum.albumID}`);
             showToast('success', 'Альбом удален', `Запись "${pendingDeleteAlbum.title}" удалена из каталога.`);
@@ -452,9 +451,7 @@ export default function Admin() {
 
     const handleImportFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) {
-            return;
-        }
+        if (!file) return;
 
         try {
             const text = await file.text();
@@ -510,13 +507,10 @@ export default function Admin() {
             );
         } catch (error) {
             const payload = (error as { response?: { data?: ImportResult | { message?: string } } }).response?.data;
-
             if (payload && typeof payload === 'object' && 'received' in payload) {
                 const importPayload = payload as ImportResult;
                 setImportResult(importPayload);
-                if (importPayload.created > 0 || importPayload.updated > 0) {
-                    await loadData();
-                }
+                if (importPayload.created > 0 || importPayload.updated > 0) await loadData();
                 showToast('error', 'Импорт завершился с ошибками', `Создано: ${importPayload.created}, обновлено: ${importPayload.updated}, ошибок: ${importPayload.failed}.`);
             } else {
                 showToast('error', 'Импорт не выполнен', getFirstApiErrorMessage(payload) || 'Проверьте формат файла и попробуйте еще раз.');
@@ -526,21 +520,7 @@ export default function Admin() {
         }
     };
 
-    if (!isAuthenticated) {
-        return (
-            <main className="mx-auto max-w-3xl px-5 py-20 text-center">
-                <div className="bg-[var(--paper-soft)] p-8 poster-border">
-                    <Shield className="mx-auto h-16 w-16 text-[var(--coral)]" />
-                    <h1 className="display-font mt-6 text-6xl leading-none">Нужен вход в аккаунт</h1>
-                    <p className="mx-auto mt-5 max-w-xl text-lg leading-7 text-[var(--muted)]">
-                        Войдите под учетной записью администратора, чтобы управлять каталогом и импортировать данные.
-                    </p>
-                </div>
-            </main>
-        );
-    }
-
-    if (role !== 'Admin') {
+    if (!isAuthenticated || role !== 'Admin') {
         return (
             <main className="mx-auto max-w-3xl px-5 py-20 text-center">
                 <div className="bg-[var(--paper-soft)] p-8 poster-border">
@@ -680,7 +660,6 @@ export default function Admin() {
                     )}
                 </section>
             ) : loading ? (
-                // СОСТОЯНИЕ ЗАГРУЗКИ (Для Каталога и Импорта)
                 <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-8 font-bold">
                     Загружаем данные каталога...
                 </div>
@@ -726,18 +705,19 @@ export default function Admin() {
                         </div>
 
                         <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
-                            <div className="hidden grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
+                            {/* ИЗМЕНЕНА РАЗМЕТКА СЕТКИ ДЛЯ ВМЕЩЕНИЯ ИНПУТОВ ПОПОЛНЕНИЯ */}
+                            <div className="hidden grid-cols-[2fr_1.2fr_0.8fr_0.6fr_0.8fr_160px_100px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
                                 <span>Альбом</span>
                                 <span>Артист</span>
                                 <span>Жанр</span>
                                 <span>Год</span>
                                 <span>Цена</span>
-                                <span>Остаток</span>
+                                <span>Склад (+пополнение)</span>
                                 <span className="text-right">Действия</span>
                             </div>
 
                             {filteredAlbums.length > 0 ? filteredAlbums.map(album => (
-                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center hover:bg-gray-50 transition-colors">
+                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2fr_1.2fr_0.8fr_0.6fr_0.8fr_160px_100px] md:items-center hover:bg-gray-50 transition-colors">
                                     <div>
                                         <div className="font-black">{album.title}</div>
                                         <div className="mt-1 text-sm text-[var(--muted)] line-clamp-2">{album.description || 'Без описания'}</div>
@@ -746,12 +726,36 @@ export default function Admin() {
                                     <div className="text-sm font-semibold">{album.genre?.name || 'Не указан'}</div>
                                     <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
                                     <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
-                                    <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>{album.stockQuantity} шт.</div>
+
+                                    {/* БЛОК С ОСТАТКОМ И КНОПКОЙ ПОПОЛНЕНИЯ */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>
+                                            {album.stockQuantity} шт.
+                                        </div>
+                                        <div className="flex items-center">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                placeholder="+шт"
+                                                value={addStockInputs[album.albumID] || ''}
+                                                onChange={e => setAddStockInputs(prev => ({...prev, [album.albumID]: e.target.value}))}
+                                                className="w-14 border-2 border-r-0 border-[var(--line)] px-1.5 py-1 text-xs font-bold outline-none focus:bg-[var(--sun)]/20"
+                                            />
+                                            <button
+                                                onClick={() => void handleAddStock(album.albumID)}
+                                                className="flex h-[26px] items-center bg-[var(--sun)] border-2 border-[var(--line)] px-2 hover:bg-[#e5b32e] transition-colors"
+                                                title="Прибавить к остатку"
+                                            >
+                                                <Plus className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEditModal(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--sun)] hover:bg-[#e5b32e] transition-colors" title="Редактировать">
+                                        <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-gray-100 transition-colors" title="Полное редактирование">
                                             <Edit className="h-4 w-4" />
                                         </button>
-                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
+                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
