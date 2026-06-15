@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import toast from 'react-hot-toast'; // Теперь мы используем этот импорт
 import api from '../api/api';
 import { useAuth } from './AuthContext';
 import type { Album } from '../types';
@@ -49,23 +50,36 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         await api.delete(`/favorites/${albumId}`);
         setFavorites(prev => prev.filter(album => album.albumID !== albumId));
+        toast.success('Удалено из избранного'); // Можно добавить и сюда на всякий случай
     }, [isAuthenticated]);
 
     const toggleFavorite = useCallback(async (album: Album) => {
         if (!isAuthenticated) {
+            // 1. Показываем уведомление об ошибке
+            toast.error('Для добавления в избранное нужно войти в аккаунт');
+
             const next = `${window.location.pathname}${window.location.search}`;
-            window.location.href = `/login?next=${encodeURIComponent(next)}`;
+
+            // 2. Делаем небольшую задержку, чтобы пользователь успел прочитать текст
+            setTimeout(() => {
+                window.location.href = `/login?next=${encodeURIComponent(next)}`;
+            }, 1500);
+
             return false;
         }
 
         if (favoriteIds.has(album.albumID)) {
             await api.delete(`/favorites/${album.albumID}`);
             setFavorites(prev => prev.filter(item => item.albumID !== album.albumID));
+            // 3. Уведомление об удалении
+            toast.success('Удалено из избранного');
             return false;
         }
 
         await api.post(`/favorites/${album.albumID}`);
         setFavorites(prev => prev.some(item => item.albumID === album.albumID) ? prev : [album, ...prev]);
+        // 4. Уведомление об успешном добавлении
+        toast.success('Добавлено в избранное!');
         return true;
     }, [favoriteIds, isAuthenticated]);
 

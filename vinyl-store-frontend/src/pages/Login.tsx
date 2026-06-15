@@ -4,6 +4,7 @@ import type { AxiosError } from 'axios';
 import api from '../api/api';
 import { Disc3, Music2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast'; // <-- Импортируем toast
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -25,6 +26,13 @@ export default function Login() {
 
         if (token && role && username) {
             login(token, role, username);
+
+            // 1. Показываем уведомление об успешном входе
+            toast.success('Успешный вход через Spotify!');
+
+            // 2. Очищаем URL от параметров токена, чтобы они не мозолили глаза
+            window.history.replaceState({}, document.title, window.location.pathname);
+
             navigate(getPostLoginTarget(), { replace: true });
         }
     }, [navigate, login]);
@@ -34,9 +42,11 @@ export default function Login() {
         try {
             const res = await api.post('/auth/login', { email, password });
             login(res.data.token, res.data.userRole || res.data.role, res.data.username);
+
+            toast.success('Вы успешно вошли!'); // <-- Добавили успех
             navigate(getPostLoginTarget());
         } catch {
-            alert('Неверный логин или пароль');
+            toast.error('Неверный логин или пароль'); // <-- Заменили alert на toast
         }
     };
 
@@ -48,7 +58,7 @@ export default function Login() {
             window.location.href = res.data.authUrl;
         } catch (error) {
             const axiosError = error as AxiosError<{ message?: string }>;
-            alert(axiosError.response?.data?.message || 'Не удалось начать вход через Spotify');
+            toast.error(axiosError.response?.data?.message || 'Не удалось начать вход через Spotify'); // <-- Заменили alert
         } finally {
             setIsSpotifyLoading(false);
         }

@@ -1,6 +1,6 @@
-﻿WEBSTORM PROJECT EXPORT - 06/07/2026 14:15:15
+﻿WEBSTORM PROJECT EXPORT - 06/16/2026 00:51:19
 Project Path: C:\Users\ysupo\WebstormProjects\untitled1
-Total Files: 46
+Total Files: 48
 
 ================================================================================
 FILE: package-lock.json
@@ -110,6 +110,7 @@ FILE: vinyl-store-frontend\package-lock.json
       "dependencies": {
         "lucide-react": "^1.8.0",
         "react": "^19.2.5",
+        "react-dadata": "^2.28.0-beta.0",
         "react-dom": "^19.2.5",
         "react-router-dom": "^7.14.1"
       },
@@ -177,7 +178,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-CGOfOJqWjg2qW/Mb6zNsDm+u5vFQ8DxXfbM09z69p5Z6+mE1ikP2jUXw+j42Pf1XTYED2Rni5f95npYeuwMDQA==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "@babel/code-frame": "^7.29.0",
         "@babel/generator": "^7.29.0",
@@ -385,6 +385,40 @@ FILE: vinyl-store-frontend\package-lock.json
       },
       "engines": {
         "node": ">=6.9.0"
+      }
+    },
+    "node_modules/@emnapi/core": {
+      "version": "1.11.0",
+      "resolved": "https://registry.npmjs.org/@emnapi/core/-/core-1.11.0.tgz",
+      "integrity": "sha512-l9Oo58x0HOP5znGzVhYW9U3e5wVuA4LAZU2AGezTmkhO1CgQRFDhDg4nneHsu/t3WniXg9QrG2nIXL/ZS8ln8Q==",
+      "dev": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "@emnapi/wasi-threads": "1.2.2",
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@emnapi/core/node_modules/@emnapi/wasi-threads": {
+      "version": "1.2.2",
+      "resolved": "https://registry.npmjs.org/@emnapi/wasi-threads/-/wasi-threads-1.2.2.tgz",
+      "integrity": "sha512-c95qOXkHdydNKhscBTebqEC1CVAZpyqOfVfBzQ1qgzyl3gfeldUjIggDbIZgDKsHLgnsM+igH7TJ/eAasaVuMA==",
+      "dev": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@emnapi/runtime": {
+      "version": "1.11.0",
+      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.0.tgz",
+      "integrity": "sha512-55coeOFKHv1ywEcUXJtWU5f+Jr/W5tZDvZig8DLKSwUN1JpROQ4rk/SNOQiFWmaR/VKF4zuFyW1B8JduOSv6Pg==",
+      "dev": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "tslib": "^2.4.0"
       }
     },
     "node_modules/@emnapi/wasi-threads": {
@@ -1289,7 +1323,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "undici-types": "~7.16.0"
       }
@@ -1300,7 +1333,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "csstype": "^3.2.2"
       }
@@ -1360,7 +1392,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-/Zb/xaIDfxeJnvishjGdcR4jmr7S+bda8PKNhRGdljDM+elXhlvN0FyPSsMnLmJUrVG9aPO6dof80wjMawsASg==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "@typescript-eslint/scope-manager": "8.58.2",
         "@typescript-eslint/types": "8.58.2",
@@ -1643,7 +1674,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "bin": {
         "acorn": "bin/acorn"
       },
@@ -1808,7 +1838,6 @@ FILE: vinyl-store-frontend\package-lock.json
         }
       ],
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "baseline-browser-mapping": "^2.10.12",
         "caniuse-lite": "^1.0.30001782",
@@ -1965,6 +1994,12 @@ FILE: vinyl-store-frontend\package-lock.json
       "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
       "dev": true,
+      "license": "MIT"
+    },
+    "node_modules/debounce": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/debounce/-/debounce-1.2.1.tgz",
+      "integrity": "sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==",
       "license": "MIT"
     },
     "node_modules/debug": {
@@ -2126,7 +2161,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "@eslint-community/eslint-utils": "^4.8.0",
         "@eslint-community/regexpp": "^4.12.1",
@@ -2636,6 +2670,16 @@ FILE: vinyl-store-frontend\package-lock.json
         "hermes-estree": "0.25.1"
       }
     },
+    "node_modules/highlight-words": {
+      "version": "1.2.2",
+      "resolved": "https://registry.npmjs.org/highlight-words/-/highlight-words-1.2.2.tgz",
+      "integrity": "sha512-Mf4xfPXYm8Ay1wTibCrHpNWeR2nUMynMVFkXCi4mbl+TEgmNOe+I4hV7W3OCZcSvzGL6kupaqpfHOemliMTGxQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 16",
+        "npm": ">= 8"
+      }
+    },
     "node_modules/ignore": {
       "version": "5.3.2",
       "resolved": "https://registry.npmjs.org/ignore/-/ignore-5.3.2.tgz",
@@ -2709,7 +2753,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "bin": {
         "jiti": "lib/jiti-cli.mjs"
       }
@@ -3175,7 +3218,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "version": "3.3.11",
       "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.11.tgz",
       "integrity": "sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==",
-      "dev": true,
       "funding": [
         {
           "type": "github",
@@ -3300,7 +3342,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "engines": {
         "node": ">=12"
       },
@@ -3328,7 +3369,6 @@ FILE: vinyl-store-frontend\package-lock.json
         }
       ],
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "nanoid": "^3.3.11",
         "picocolors": "^1.1.1",
@@ -3380,9 +3420,24 @@ FILE: vinyl-store-frontend\package-lock.json
       "resolved": "https://registry.npmjs.org/react/-/react-19.2.5.tgz",
       "integrity": "sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==",
       "license": "MIT",
-      "peer": true,
       "engines": {
         "node": ">=0.10.0"
+      }
+    },
+    "node_modules/react-dadata": {
+      "version": "2.28.0-beta.0",
+      "resolved": "https://registry.npmjs.org/react-dadata/-/react-dadata-2.28.0-beta.0.tgz",
+      "integrity": "sha512-qoilqB9sUmPYDZ6sujSfcAqeF0ifS85aHN8+PUsCK132n+sX4NYk9L/E1ry48T/WzBbxnPw/Q+4QdV3ENN6blA==",
+      "license": "MIT",
+      "dependencies": {
+        "debounce": "^1.2.1",
+        "highlight-words": "^1.2.1",
+        "nanoid": "^3.3.6",
+        "shallowequal": "^1.1.0"
+      },
+      "peerDependencies": {
+        "react": "^15.6 || ^16.0 || ^17.0 || ^18.0 || ^19.0",
+        "react-dom": "^15.6 || ^16.0 || ^17.0 || ^18.0 || ^19.0"
       }
     },
     "node_modules/react-dom": {
@@ -3390,7 +3445,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.5.tgz",
       "integrity": "sha512-J5bAZz+DXMMwW/wV3xzKke59Af6CHY7G4uYLN1OvBcKEsWOs4pQExj86BBKamxl/Ik5bx9whOrvBlSDfWzgSag==",
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "scheduler": "^0.27.0"
       },
@@ -3507,6 +3561,12 @@ FILE: vinyl-store-frontend\package-lock.json
       "version": "2.7.2",
       "resolved": "https://registry.npmjs.org/set-cookie-parser/-/set-cookie-parser-2.7.2.tgz",
       "integrity": "sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==",
+      "license": "MIT"
+    },
+    "node_modules/shallowequal": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/shallowequal/-/shallowequal-1.1.0.tgz",
+      "integrity": "sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==",
       "license": "MIT"
     },
     "node_modules/shebang-command": {
@@ -3646,7 +3706,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
       "dev": true,
       "license": "Apache-2.0",
-      "peer": true,
       "bin": {
         "tsc": "bin/tsc",
         "tsserver": "bin/tsserver"
@@ -3733,7 +3792,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-t7g7GVRpMXjNpa67HaVWI/8BWtdVIQPCL2WoozXXA7LBGEFK4AkkKkHx2hAQf5x1GZSlcmEDPkVLSGahxnEEZw==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "lightningcss": "^1.32.0",
         "picomatch": "^4.0.4",
@@ -3858,7 +3916,6 @@ FILE: vinyl-store-frontend\package-lock.json
       "integrity": "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "funding": {
         "url": "https://github.com/sponsors/colinhacks"
       }
@@ -3897,6 +3954,7 @@ FILE: vinyl-store-frontend\package.json
   "dependencies": {
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
+    "react-dadata": "^2.28.0-beta.0",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.1"
   },
@@ -4445,6 +4503,7 @@ export default function App() {
                                     <Route path="/favorites" element={<Suspense fallback={<Loader />}><Favorites /></Suspense>} />
                                     <Route path="/admin" element={<Suspense fallback={<Loader />}><Admin /></Suspense>} />
                                     <Route path="/album/:id" element={<Suspense fallback={<Loader />}><AlbumDetail /></Suspense>} />
+
                                 </Routes>
                             </main>
                             <Footer />
@@ -4796,7 +4855,7 @@ FILE: vinyl-store-frontend\src\api\api.ts
 import axios, { type InternalAxiosRequestConfig, type AxiosError } from 'axios';
 
 //https://vynil.somee.com/api
-const API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5062/api';
+const API_BASE = (import.meta.env.VITE_API_URL as string) || 'https://vynil.somee.com/api';
 
 const api = axios.create({
     baseURL: API_BASE,
@@ -5262,13 +5321,14 @@ export default function Navbar() {
 
     return (
         <nav className="sticky top-0 z-50 border-b-2 border-[var(--line)] bg-[var(--paper)]/95 backdrop-blur">
-            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8">
-                <Link to="/" className="flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--sun)]">
-                        <Disc3 className="h-7 w-7" />
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-1.5 xs:gap-4 px-3 xs:px-5 py-2.5 xs:py-4 md:px-8">
+
+                <Link to="/" className="flex items-center gap-1.5 xs:gap-3 min-w-0 flex-shrink-1">
+                    <span className="grid h-9 w-9 xs:h-11 xs:w-11 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--sun)] flex-shrink-0">
+                        <Disc3 className="h-5 w-5 xs:h-7 xs:w-7" />
                     </span>
-                    <span>
-                        <span className="display-font block text-xl leading-none md:text-2xl">VINYL STORE</span>
+                    <span className="min-w-0 truncate">
+                        <span className="display-font block text-lg xs:text-xl md:text-2xl leading-none truncate">VINYL STORE</span>
                         <span className="mt-1 hidden text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)] sm:block">
                             магазин виниловых пластинок
                         </span>
@@ -5283,16 +5343,16 @@ export default function Navbar() {
                     ))}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 xs:gap-3 flex-shrink-0">
                     {isAuthenticated && (
                         <button
                             onClick={() => navigate('/favorites')}
-                            className="relative grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] transition-transform hover:-translate-y-0.5"
+                            className="relative grid h-9 w-9 xs:h-11 xs:w-11 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] transition-transform hover:-translate-y-0.5"
                             title="Избранное"
                         >
-                            <Heart className="h-5 w-5" />
+                            <Heart className="h-4 w-4 xs:h-5 xs:w-5" />
                             {favorites.length > 0 && (
-                                <span className="absolute -right-2 -top-2 grid h-6 min-w-6 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--sun)] px-1 text-xs font-black">
+                                <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 xs:h-6 xs:min-w-6 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--sun)] px-0.5 text-[9px] xs:text-xs font-black">
                                     {favorites.length}
                                 </span>
                             )}
@@ -5301,12 +5361,12 @@ export default function Navbar() {
 
                     <button
                         onClick={() => navigate('/cart')}
-                        className="relative grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] transition-transform hover:-translate-y-0.5"
+                        className="relative grid h-9 w-9 xs:h-11 xs:w-11 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] transition-transform hover:-translate-y-0.5"
                         title="Корзина"
                     >
-                        <ShoppingBag className="h-5 w-5" />
+                        <ShoppingBag className="h-4 w-4 xs:h-5 xs:w-5" />
                         {getItemCount() > 0 && (
-                            <span className="absolute -right-2 -top-2 grid h-6 min-w-6 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--coral)] px-1 text-xs font-black text-white">
+                            <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 xs:h-6 xs:min-w-6 place-items-center rounded-full border-2 border-[var(--line)] bg-[var(--coral)] px-0.5 text-[9px] xs:text-xs font-black text-white">
                                 {getItemCount()}
                             </span>
                         )}
@@ -5316,15 +5376,15 @@ export default function Navbar() {
                         <div className="relative">
                             <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className="flex h-11 items-center gap-2 border-2 border-[var(--line)] bg-[var(--paper-soft)] px-3 font-bold"
+                                className="flex h-9 xs:h-11 items-center gap-1.5 border-2 border-[var(--line)] bg-[var(--paper-soft)] px-2 xs:px-3 font-bold text-sm xs:text-base"
                             >
-                                <User className="h-5 w-5" />
+                                <User className="h-4 w-4 xs:h-5 xs:w-5" />
                                 <span className="hidden max-w-28 truncate md:block">{username}</span>
-                                <ChevronDown className={`h-4 w-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`h-3 w-3 xs:h-4 xs:w-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isProfileOpen && (
-                                <div className="poster-border-sm absolute right-0 mt-3 w-64 bg-[var(--paper-soft)] p-2">
+                                <div className="poster-border-sm absolute right-0 mt-3 w-64 bg-[var(--paper-soft)] p-2 z-50">
                                     <div className="border-b-2 border-[var(--line)] px-3 py-3">
                                         <div className="font-black">{username}</div>
                                         <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--coral)]">{role}</div>
@@ -5347,14 +5407,14 @@ export default function Navbar() {
                     ) : (
                         <button
                             onClick={() => navigate('/login')}
-                            className="hidden border-2 border-[var(--line)] bg-[var(--ink)] px-5 py-2.5 text-sm font-black uppercase tracking-[0.14em] text-white transition-transform hover:-translate-y-0.5 sm:block"
+                            className="hidden xs:inline-flex h-9 xs:h-11 items-center border-2 border-[var(--line)] bg-[var(--ink)] px-3 xs:px-5 text-xs xs:text-sm font-black uppercase tracking-[0.14em] text-white transition-transform hover:-translate-y-0.5 sm:block"
                         >
                             Войти
                         </button>
                     )}
 
-                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--sun)] md:hidden">
-                        {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="grid h-9 w-9 xs:h-11 xs:w-11 place-items-center border-2 border-[var(--line)] bg-[var(--sun)] md:hidden flex-shrink-0">
+                        {isMobileMenuOpen ? <X className="h-4 w-4 xs:h-5 xs:w-5" /> : <Menu className="h-4 w-4 xs:h-5 xs:w-5" />}
                     </button>
                 </div>
             </div>
@@ -5384,6 +5444,108 @@ export default function Navbar() {
     );
 }
 
+
+================================================================================
+FILE: vinyl-store-frontend\src\components\PopularAlbums.tsx
+================================================================================
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Disc, Flame, ArrowRight } from 'lucide-react';
+import api from '../api/api';
+import type { Album } from '../types';
+
+const formatPrice = (value: number) => value.toLocaleString('ru-RU');
+
+export default function PopularAlbums() {
+    const [popular, setPopular] = useState<Album[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchPopular = async () => {
+            try {
+                const response = await api.get<any>('/albums/popular?count=5');
+                if (Array.isArray(response.data)) {
+                    setPopular(response.data);
+                } else if (response.data && Array.isArray(response.data.data)) {
+                    setPopular(response.data.data);
+                }
+            } catch (err) {
+                setError('Не удалось загрузить чарт');
+            } finally {
+                setLoading(false);
+            }
+        };
+        void fetchPopular();
+    }, []);
+
+    if (loading || error || popular.length === 0) return null;
+
+    return (
+        <section className="my-12">
+            <div className="mb-6 border-b-2 border-[var(--line)] pb-3 flex items-center gap-2">
+                <Flame className="h-6 w-6 text-[var(--coral)] animate-pulse" />
+                <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--coral)]">Горячие продажи</div>
+                    <h2 className="display-font text-3xl md:text-5xl mt-0.5">Топ пластинок</h2>
+                </div>
+            </div>
+
+            <div className="border-2 border-[var(--line)] bg-white divide-y-2 divide-[var(--line)] overflow-hidden">
+                {popular.map((album, index) => (
+                    <div
+                        key={album.albumID}
+                        onClick={() => navigate(`/album/${album.albumID}`)}
+                        className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-[var(--sun)]/10 cursor-pointer transition-colors relative"
+                    >
+                        {/* Левая часть */}
+                        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+                            {/* Номер: уменьшен для микро-экранов, фиксированная ширина */}
+                            <span className="display-font text-3xl xs:text-4xl md:text-5xl text-[var(--line)] opacity-30 group-hover:opacity-100 group-hover:text-[var(--coral)] transition-all select-none tabular-nums w-10 flex-shrink-0">
+                                #{index + 1}
+                            </span>
+
+                            {/* Обложка: скрыта на экранах меньше 375px (xs), чтобы не жрать место */}
+                            <div className="h-12 w-12 border-2 border-[var(--line)] bg-[var(--paper-soft)] flex-shrink-0 relative overflow-hidden hidden xs:block">
+                                {album.imageURL ? (
+                                    <img src={album.imageURL} alt={album.title} className="h-full w-full object-cover" />
+                                ) : (
+                                    <Disc className="h-6 w-6 m-2 text-[var(--muted)]" />
+                                )}
+                            </div>
+
+                            {/* Текстовая инфо с защитой от переполнения (min-w-0 + truncate) */}
+                            <div className="min-w-0 flex-1">
+                                <h3 className="font-black text-base xs:text-lg leading-tight truncate group-hover:text-[var(--coral)] transition-colors">
+                                    {album.title}
+                                </h3>
+                                <p className="text-xs xs:text-sm font-semibold text-[var(--muted)] mt-0.5 truncate">
+                                    {album.artist?.name || 'Неизвестный артист'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Правая часть */}
+                        <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-none border-[var(--line)]/10 pt-2 sm:pt-0">
+                            <div className="font-black text-base xs:text-lg tabular-nums">
+                                {formatPrice(album.price)} ₽
+                            </div>
+
+                            <span className="inline-block px-2 py-0.5 bg-[var(--paper-soft)] text-[10px] font-black uppercase border border-[var(--line)]/30 sm:hidden">
+                                {album.genre?.name}
+                            </span>
+
+                            <div className="h-9 w-9 border-2 border-[var(--line)] bg-white group-hover:bg-[var(--ink)] group-hover:text-white hidden sm:grid place-items-center transition-colors">
+                                <ArrowRight className="h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+}
 
 
 ================================================================================
@@ -5489,6 +5651,91 @@ export default function VinylBackground() {
     );
 }
 
+
+
+================================================================================
+FILE: vinyl-store-frontend\src\components\WeeklyShowcase.tsx
+================================================================================
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Disc } from 'lucide-react';
+import api from '../api/api';
+import type { Album } from '../types';
+
+const makeDemoCover = (title: string, seed: number) => {
+    const palettes = [
+        ['#f05a3b', '#f4c84b', '#15110f'],
+        ['#2e5f8f', '#9ed8c3', '#15110f'],
+        ['#15110f', '#f4eadf', '#f05a3b']
+    ];
+    const [bg, accent, ink] = palettes[seed % palettes.length];
+    const safeTitle = title.replace(/[<&>"]/g, '');
+
+    // Переменная safeArtist удалена, так как в SVG используется только название альбома
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900"><rect width="900" height="900" fill="${bg}"/><circle cx="450" cy="450" r="292" fill="${accent}" stroke="${ink}" stroke-width="24"/><circle cx="450" cy="450" r="92" fill="${bg}" stroke="${ink}" stroke-width="18"/><text x="82" y="216" font-family="Arial Black, Arial" font-size="72" font-weight="900" fill="${ink}">${safeTitle.slice(0, 16)}</text></svg>`;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
+export default function WeeklyShowcase() {
+    const [showcase, setShowcase] = useState<Album[]>([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchShowcase = async () => {
+            try {
+                const response = await api.get<Album[]>('/albums/popular?count=3');
+                setShowcase(response.data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        void fetchShowcase();
+    }, []);
+
+    if (loading || showcase.length === 0) return null;
+
+    return (
+        <div className="poster-border rotate-0 xs:rotate-1 bg-[var(--paper-soft)] p-4 xs:p-5 transition-transform hover:rotate-0 duration-300 shadow-[4px_4px_0px_0px_var(--line)]">
+            <div className="border-b-2 border-[var(--line)] pb-3 text-xs font-black uppercase tracking-[0.18em] text-[var(--coral)] flex justify-between items-center">
+                <span>Витрина недели</span>
+                <span className="h-2 w-2 rounded-full bg-[var(--coral)] animate-ping" />
+            </div>
+
+            {/* Сетка адаптирована под сверхмалые дисплеи */}
+            <div className="grid grid-cols-3 gap-2 xs:gap-3 pt-4 pb-2 xs:pb-6">
+                {showcase.map((album, index) => {
+                    const coverSrc = album.imageURL || makeDemoCover(album.title, album.albumID);
+
+                    return (
+                        <div
+                            key={album.albumID}
+                            onClick={() => navigate(`/album/${album.albumID}`)}
+                            className={`group aspect-square w-full border-2 border-[var(--line)] bg-white object-cover cursor-pointer relative overflow-hidden transition-all duration-300 hover:scale-105 ${
+                                index === 1 ? 'translate-y-3 xs:translate-y-6' : ''
+                            }`}
+                        >
+                            <img
+                                src={coverSrc}
+                                alt={album.title}
+                                className="h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <Disc className="text-white h-5 w-5 xs:h-7 xs:w-7 animate-spin" />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <p className="mt-6 xs:mt-10 border-t-2 border-[var(--line)] pt-3 text-xs xs:text-sm font-bold leading-relaxed text-[var(--muted)]">
+                Кликните на любую пластинку, чтобы изучить описание и оформить заказ.
+            </p>
+        </div>
+    );
+}
 
 
 ================================================================================
@@ -6015,7 +6262,7 @@ export const useFavorites = () => {
 FILE: vinyl-store-frontend\src\pages\Admin.tsx
 ================================================================================
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import { AlertTriangle, Edit, FileText, Plus, RefreshCcw, Search, Shield, Trash2, Upload } from 'lucide-react';
+import { AlertTriangle, Edit, FileText, Plus, RefreshCcw, Search, Shield, Trash2, Upload, Package, AlertCircle } from 'lucide-react';
 import api from '../api/api';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Toast, { type ToastState } from '../components/Toast';
@@ -6036,6 +6283,17 @@ import {
     type ParsedImportValidationError,
     validateParsedImportRows,
 } from '../utils/adminAlbumImport';
+
+const formatPrice = (value: number) => value.toLocaleString('ru-RU');
+
+interface Order {
+    orderID: number;
+    customerName: string;
+    customerPhone: string;
+    totalAmount: number;
+    status: string;
+    orderDate: string;
+}
 
 type CatalogResponse = {
     data: Album[];
@@ -6068,39 +6326,19 @@ const fieldLabels: Record<keyof AdminAlbumForm, string> = {
 const hasFormErrors = (errors: AdminAlbumFormErrors) => Object.keys(errors).length > 0;
 
 const getFirstApiErrorMessage = (payload: unknown) => {
-    if (!payload || typeof payload !== 'object') {
-        return null;
-    }
-
-    const data = payload as {
-        message?: string;
-        errors?: Record<string, string[]>;
-    };
-
-    if (data.message) {
-        return data.message;
-    }
-
+    if (!payload || typeof payload !== 'object') return null;
+    const data = payload as { message?: string; errors?: Record<string, string[]> };
+    if (data.message) return data.message;
     const firstFieldErrors = Object.values(data.errors ?? {}).flat();
     return firstFieldErrors[0] ?? null;
 };
 
 const mapApiValidationErrors = (payload: unknown): AdminAlbumFormErrors => {
-    if (!payload || typeof payload !== 'object') {
-        return {};
-    }
-
-    const data = payload as {
-        errors?: Record<string, string[]>;
-    };
-
-    if (!data.errors) {
-        return {};
-    }
-
+    if (!payload || typeof payload !== 'object') return {};
+    const data = payload as { errors?: Record<string, string[]> };
+    if (!data.errors) return {};
     const entries = Object.entries(data.errors).map(([key, value]) => [key.toLowerCase(), value[0] ?? '']);
     const errorsMap = Object.fromEntries(entries);
-
     return {
         title: errorsMap.title,
         artistID: errorsMap.artistid,
@@ -6113,6 +6351,7 @@ const mapApiValidationErrors = (payload: unknown): AdminAlbumFormErrors => {
     };
 };
 
+// Добавлен новый проп: originalStock
 type AlbumFormFieldsProps = {
     form: AdminAlbumForm;
     errors: AdminAlbumFormErrors;
@@ -6122,18 +6361,20 @@ type AlbumFormFieldsProps = {
     submitText: string;
     loading: boolean;
     onSubmit: (event: FormEvent) => void;
+    originalStock?: number;
 };
 
 function AlbumFormFields({
-    form,
-    errors,
-    artists,
-    genres,
-    onChange,
-    submitText,
-    loading,
-    onSubmit,
-}: AlbumFormFieldsProps) {
+                             form,
+                             errors,
+                             artists,
+                             genres,
+                             onChange,
+                             submitText,
+                             loading,
+                             onSubmit,
+                             originalStock // Получаем оригинальный остаток, если это форма редактирования
+                         }: AlbumFormFieldsProps) {
     const inputClass = 'w-full border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20';
 
     return (
@@ -6174,9 +6415,20 @@ function AlbumFormFields({
                 {errors.price && <div className="mt-2 text-sm font-semibold text-red-700">{errors.price}</div>}
             </label>
 
+            {/* ИЗМЕНЕНО ПОЛЕ ОСТАТКА НА СКЛАДЕ */}
             <label>
-                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">{fieldLabels.stockQuantity}</span>
-                <input type="number" value={form.stockQuantity} onChange={event => onChange('stockQuantity', event.target.value)} className={inputClass} />
+                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">
+                    {originalStock !== undefined
+                        ? `Добавить на склад (Сейчас в наличии: ${originalStock} шт.)`
+                        : fieldLabels.stockQuantity}
+                </span>
+                <input
+                    type="number"
+                    value={form.stockQuantity}
+                    onChange={event => onChange('stockQuantity', event.target.value)}
+                    className={inputClass}
+                    placeholder={originalStock !== undefined ? "Например: 5 (или -2 для списания)" : ""}
+                />
                 {errors.stockQuantity && <div className="mt-2 text-sm font-semibold text-red-700">{errors.stockQuantity}</div>}
             </label>
 
@@ -6192,7 +6444,7 @@ function AlbumFormFields({
                 {errors.description && <div className="mt-2 text-sm font-semibold text-red-700">{errors.description}</div>}
             </label>
 
-            <button type="submit" disabled={loading} className="md:col-span-2 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60">
+            <button type="submit" disabled={loading} className="md:col-span-2 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-gray-800 transition-colors">
                 {loading ? 'Сохраняем...' : submitText}
             </button>
         </form>
@@ -6201,12 +6453,16 @@ function AlbumFormFields({
 
 export default function Admin() {
     const { isAuthenticated, role } = useAuth();
-    const [activeTab, setActiveTab] = useState<'catalog' | 'import'>('catalog');
+    const [activeTab, setActiveTab] = useState<'catalog' | 'import' | 'orders'>('catalog');
+
     const [albums, setAlbums] = useState<Album[]>([]);
     const [artists, setArtists] = useState<Artist[]>([]);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
 
     const [createForm, setCreateForm] = useState<AdminAlbumForm>(createEmptyAlbumForm());
     const [createErrors, setCreateErrors] = useState<AdminAlbumFormErrors>({});
@@ -6236,28 +6492,47 @@ export default function Admin() {
     const showToast = (type: ToastState['type'], title: string, description?: string) =>
         setToast({ open: true, type, title, description });
 
+    const fetchOrders = async () => {
+        setOrdersLoading(true);
+        try {
+            const response = await api.get<Order[]>('/orders/all');
+            setOrders(response.data);
+        } catch (error) {
+            showToast('error', 'Ошибка', 'Не удалось загрузить список заказов.');
+        } finally {
+            setOrdersLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'orders' && orders.length === 0) {
+            void fetchOrders();
+        }
+    }, [activeTab]);
+
+    const handleStatusChange = async (orderId: number, newStatus: string) => {
+        try {
+            await api.put(`/orders/${orderId}/status`, { status: newStatus });
+            setOrders(prev => prev.map(o => o.orderID === orderId ? { ...o, status: newStatus } : o));
+            showToast('success', 'Статус обновлен', `Заказ #${orderId} переведен в статус "${newStatus}"`);
+        } catch (error) {
+            showToast('error', 'Ошибка', 'Не удалось изменить статус заказа');
+        }
+    };
+
     const fetchAllAlbums = async () => {
         const firstPage = await api.get<CatalogResponse>('/albums', { params: { page: 1, pageSize: 100 } });
         const { data, totalPages } = firstPage.data;
-
-        if (totalPages <= 1) {
-            return data;
-        }
-
+        if (totalPages <= 1) return data;
         const remainingPages = await Promise.all(
             Array.from({ length: totalPages - 1 }, (_, index) =>
                 api.get<CatalogResponse>('/albums', { params: { page: index + 2, pageSize: 100 } }))
         );
-
-        return [
-            ...data,
-            ...remainingPages.flatMap(response => response.data.data),
-        ];
+        return [...data, ...remainingPages.flatMap(response => response.data.data)];
     };
 
     const loadData = async () => {
         setLoading(true);
-
         try {
             const [loadedAlbums, artistsResponse, genresResponse] = await Promise.all([
                 fetchAllAlbums(),
@@ -6286,10 +6561,7 @@ export default function Admin() {
 
     const filteredAlbums = useMemo(() => {
         const term = search.trim().toLowerCase();
-        if (!term) {
-            return albums;
-        }
-
+        if (!term) return albums;
         return albums.filter(album =>
             album.title.toLowerCase().includes(term) ||
             album.artist?.name.toLowerCase().includes(term) ||
@@ -6307,10 +6579,7 @@ export default function Admin() {
     };
 
     const updateEditField = <K extends keyof AdminAlbumForm>(field: K, value: AdminAlbumForm[K]) => {
-        if (!editForm) {
-            return;
-        }
-
+        if (!editForm) return;
         setEditForm(previous => previous ? { ...previous, [field]: value } : previous);
         setEditErrors(previous => {
             const next = { ...previous };
@@ -6321,7 +6590,6 @@ export default function Admin() {
 
     const handleCreateAlbum = async (event: FormEvent) => {
         event.preventDefault();
-
         const validationErrors = validateAdminAlbumForm(createForm, artists, genres);
         setCreateErrors(validationErrors);
 
@@ -6331,7 +6599,6 @@ export default function Admin() {
         }
 
         setCreateLoading(true);
-
         try {
             await api.post('/albums', buildAlbumPayload(createForm));
             showToast('success', 'Альбом добавлен', 'Новая запись появилась в каталоге.');
@@ -6341,10 +6608,7 @@ export default function Admin() {
         } catch (error) {
             const payload = (error as { response?: { data?: unknown } }).response?.data;
             const apiErrors = mapApiValidationErrors(payload);
-            if (hasFormErrors(apiErrors)) {
-                setCreateErrors(apiErrors);
-            }
-
+            if (hasFormErrors(apiErrors)) setCreateErrors(apiErrors);
             showToast('error', 'Не удалось создать альбом', getFirstApiErrorMessage(payload) || 'Попробуйте еще раз.');
         } finally {
             setCreateLoading(false);
@@ -6353,40 +6617,47 @@ export default function Admin() {
 
     const openEditModal = (album: Album) => {
         setEditingAlbum(album);
-        setEditForm(albumToAdminForm(album));
+
+        const form = albumToAdminForm(album);
+        // ИСПРАВЛЕНИЕ: Передаем '0' как строку, а не как число
+        form.stockQuantity = '0';
+
+        setEditForm(form);
         setEditErrors({});
     };
 
     const handleUpdateAlbum = async (event: FormEvent) => {
         event.preventDefault();
+        if (!editingAlbum || !editForm) return;
 
-        if (!editingAlbum || !editForm) {
-            return;
-        }
+        const addedAmount = Number(editForm.stockQuantity) || 0;
+        const finalStockQuantity = editingAlbum.stockQuantity + addedAmount;
 
-        const validationErrors = validateAdminAlbumForm(editForm, artists, genres);
+        // ИСПРАВЛЕНИЕ: Превращаем итоговое число обратно в строку с помощью .toString()
+        const formToValidate = {
+            ...editForm,
+            stockQuantity: finalStockQuantity.toString()
+        };
+
+        const validationErrors = validateAdminAlbumForm(formToValidate, artists, genres);
         setEditErrors(validationErrors);
 
         if (hasFormErrors(validationErrors)) {
-            showToast('error', 'Исправьте форму', 'Редактирование нельзя сохранить с некорректными данными.');
+            showToast('error', 'Ошибка остатков', 'Итоговый остаток на складе не может быть меньше 0.');
             return;
         }
 
         setEditLoading(true);
-
         try {
-            await api.put(`/albums/${editingAlbum.albumID}`, buildAlbumPayload(editForm));
-            showToast('success', 'Изменения сохранены', 'Карточка альбома обновлена.');
+            await api.put(`/albums/${editingAlbum.albumID}`, buildAlbumPayload(formToValidate));
+            showToast('success', 'Изменения сохранены', 'Карточка альбома и остатки обновлены.');
             setEditingAlbum(null);
             setEditForm(null);
             await loadData();
         } catch (error) {
             const payload = (error as { response?: { data?: unknown } }).response?.data;
             const apiErrors = mapApiValidationErrors(payload);
-            if (hasFormErrors(apiErrors)) {
-                setEditErrors(apiErrors);
-            }
-
+            if (hasFormErrors(apiErrors)) setEditErrors(apiErrors);
             showToast('error', 'Не удалось сохранить изменения', getFirstApiErrorMessage(payload) || 'Попробуйте еще раз.');
         } finally {
             setEditLoading(false);
@@ -6394,12 +6665,8 @@ export default function Admin() {
     };
 
     const confirmDeleteAlbum = async () => {
-        if (!pendingDeleteAlbum) {
-            return;
-        }
-
+        if (!pendingDeleteAlbum) return;
         setDeleteLoading(true);
-
         try {
             await api.delete(`/albums/${pendingDeleteAlbum.albumID}`);
             showToast('success', 'Альбом удален', `Запись "${pendingDeleteAlbum.title}" удалена из каталога.`);
@@ -6415,9 +6682,7 @@ export default function Admin() {
 
     const handleImportFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) {
-            return;
-        }
+        if (!file) return;
 
         try {
             const text = await file.text();
@@ -6473,13 +6738,10 @@ export default function Admin() {
             );
         } catch (error) {
             const payload = (error as { response?: { data?: ImportResult | { message?: string } } }).response?.data;
-
             if (payload && typeof payload === 'object' && 'received' in payload) {
                 const importPayload = payload as ImportResult;
                 setImportResult(importPayload);
-                if (importPayload.created > 0 || importPayload.updated > 0) {
-                    await loadData();
-                }
+                if (importPayload.created > 0 || importPayload.updated > 0) await loadData();
                 showToast('error', 'Импорт завершился с ошибками', `Создано: ${importPayload.created}, обновлено: ${importPayload.updated}, ошибок: ${importPayload.failed}.`);
             } else {
                 showToast('error', 'Импорт не выполнен', getFirstApiErrorMessage(payload) || 'Проверьте формат файла и попробуйте еще раз.');
@@ -6489,21 +6751,7 @@ export default function Admin() {
         }
     };
 
-    if (!isAuthenticated) {
-        return (
-            <main className="mx-auto max-w-3xl px-5 py-20 text-center">
-                <div className="bg-[var(--paper-soft)] p-8 poster-border">
-                    <Shield className="mx-auto h-16 w-16 text-[var(--coral)]" />
-                    <h1 className="display-font mt-6 text-6xl leading-none">Нужен вход в аккаунт</h1>
-                    <p className="mx-auto mt-5 max-w-xl text-lg leading-7 text-[var(--muted)]">
-                        Войдите под учетной записью администратора, чтобы управлять каталогом и импортировать данные.
-                    </p>
-                </div>
-            </main>
-        );
-    }
-
-    if (role !== 'Admin') {
+    if (!isAuthenticated || role !== 'Admin') {
         return (
             <main className="mx-auto max-w-3xl px-5 py-20 text-center">
                 <div className="bg-[var(--paper-soft)] p-8 poster-border">
@@ -6521,10 +6769,10 @@ export default function Admin() {
         <main className="mx-auto max-w-7xl px-5 py-12 md:px-8">
             <div className="mb-10 flex flex-col gap-6 border-b-2 border-[var(--line)] pb-8 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Управление каталогом</div>
+                    <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Управление магазином</div>
                     <h1 className="display-font mt-2 text-6xl leading-none md:text-9xl">Админ-панель</h1>
                     <p className="mt-5 max-w-2xl text-lg leading-7 text-[var(--muted)]">
-                        Здесь можно добавлять и редактировать пластинки, а также загружать данные из CSV или JSON без ручного перебора каждой записи.
+                        Здесь можно управлять заказами, добавлять и редактировать пластинки, а также загружать данные из CSV или JSON.
                     </p>
                 </div>
 
@@ -6546,34 +6794,108 @@ export default function Admin() {
 
             <div className="mb-8 flex flex-wrap gap-3">
                 <button
+                    onClick={() => setActiveTab('orders')}
+                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] flex items-center gap-2 transition-colors ${
+                        activeTab === 'orders' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)] hover:bg-gray-100'
+                    }`}
+                >
+                    <Package size={18} /> Заказы
+                </button>
+                <button
                     onClick={() => setActiveTab('catalog')}
-                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] ${
-                        activeTab === 'catalog' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)]'
+                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] transition-colors ${
+                        activeTab === 'catalog' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)] hover:bg-gray-100'
                     }`}
                 >
                     Каталог
                 </button>
                 <button
                     onClick={() => setActiveTab('import')}
-                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] ${
-                        activeTab === 'import' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)]'
+                    className={`border-2 border-[var(--line)] px-5 py-3 font-black uppercase tracking-[0.14em] transition-colors ${
+                        activeTab === 'import' ? 'bg-[var(--ink)] text-white' : 'bg-[var(--paper-soft)] hover:bg-gray-100'
                     }`}
                 >
                     Импорт данных
                 </button>
                 <button
-                    onClick={() => void loadData()}
-                    className="inline-flex items-center gap-2 border-2 border-[var(--line)] bg-[var(--sun)] px-5 py-3 font-black uppercase tracking-[0.14em]"
+                    onClick={() => {
+                        if (activeTab === 'orders') void fetchOrders();
+                        else void loadData();
+                    }}
+                    className="inline-flex items-center gap-2 border-2 border-[var(--line)] bg-[var(--sun)] px-5 py-3 font-black uppercase tracking-[0.14em] hover:bg-[#e5b32e] transition-colors ml-auto"
                 >
                     <RefreshCcw className="h-4 w-4" /> Обновить
                 </button>
             </div>
 
-            {loading ? (
+            {/* ВКЛАДКА: ЗАКАЗЫ */}
+            {activeTab === 'orders' ? (
+                <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                    <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <h2 className="display-font text-4xl leading-none">Список заказов</h2>
+                            <p className="mt-2 text-[var(--muted)]">Управляйте статусами доставок. Завершенные заказы блокируются от изменений.</p>
+                        </div>
+                    </div>
+
+                    {ordersLoading ? (
+                        <div className="py-10 text-center font-bold">Загрузка заказов...</div>
+                    ) : (
+                        <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
+                            <div className="hidden grid-cols-[80px_1fr_1.5fr_1fr_1.2fr] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
+                                <span>ID</span>
+                                <span>Дата</span>
+                                <span>Клиент</span>
+                                <span>Сумма</span>
+                                <span>Статус</span>
+                            </div>
+
+                            {orders.length > 0 ? orders.map(order => {
+                                const isLocked = order.status === 'Completed' || order.status === 'Cancelled';
+                                return (
+                                    <div key={order.orderID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[80px_1fr_1.5fr_1fr_1.2fr] md:items-center">
+                                        <div className="font-black text-lg">#{order.orderID}</div>
+                                        <div className="text-sm font-semibold text-[var(--muted)]">{new Date(order.orderDate).toLocaleDateString('ru-RU')}</div>
+                                        <div>
+                                            <div className="font-bold">{order.customerName}</div>
+                                            <div className="text-sm text-[var(--muted)] mt-1">{order.customerPhone}</div>
+                                        </div>
+                                        <div className="font-black tabular-nums">{formatPrice(order.totalAmount)} ₽</div>
+                                        <div>
+                                            <select
+                                                value={order.status}
+                                                onChange={(e) => void handleStatusChange(order.orderID, e.target.value)}
+                                                disabled={isLocked}
+                                                className={`w-full border-2 px-3 py-3 font-bold outline-none cursor-pointer transition-colors ${
+                                                    isLocked
+                                                        ? 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                        : 'border-[var(--line)] bg-white hover:bg-gray-50 focus:border-[var(--coral)]'
+                                                }`}
+                                            >
+                                                <option value="Pending">В ожидании</option>
+                                                <option value="Processing">В сборке</option>
+                                                <option value="Shipped">В пути</option>
+                                                <option value="Completed">Выполнен</option>
+                                                <option value="Cancelled">Отменен</option>
+                                            </select>
+                                            {isLocked && <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-red-600"><AlertCircle size={14}/> Заблокировано</div>}
+                                        </div>
+                                    </div>
+                                );
+                            }) : (
+                                <div className="px-4 py-12 text-center font-semibold text-[var(--muted)] bg-white">
+                                    Заказов пока нет.
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+            ) : loading ? (
                 <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-8 font-bold">
                     Загружаем данные каталога...
                 </div>
             ) : activeTab === 'catalog' ? (
+                // ВКЛАДКА: КАТАЛОГ
                 <div className="space-y-10">
                     <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex items-center gap-3">
@@ -6625,7 +6947,7 @@ export default function Admin() {
                             </div>
 
                             {filteredAlbums.length > 0 ? filteredAlbums.map(album => (
-                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center">
+                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center hover:bg-gray-50 transition-colors">
                                     <div>
                                         <div className="font-black">{album.title}</div>
                                         <div className="mt-1 text-sm text-[var(--muted)] line-clamp-2">{album.description || 'Без описания'}</div>
@@ -6634,12 +6956,13 @@ export default function Admin() {
                                     <div className="text-sm font-semibold">{album.genre?.name || 'Не указан'}</div>
                                     <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
                                     <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
-                                    <div className="text-sm font-semibold">{album.stockQuantity} шт.</div>
+                                    <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>{album.stockQuantity} шт.</div>
+
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEditModal(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-[var(--sun)]" title="Редактировать">
+                                        <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-[var(--sun)] transition-colors" title="Полное редактирование">
                                             <Edit className="h-4 w-4" />
                                         </button>
-                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-11 w-11 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700" title="Удалить">
+                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -6653,6 +6976,7 @@ export default function Admin() {
                     </section>
                 </div>
             ) : (
+                // ВКЛАДКА: ИМПОРТ ДАННЫХ
                 <div className="space-y-8">
                     <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex items-center gap-3">
@@ -6665,32 +6989,32 @@ export default function Admin() {
 
                         <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
                             <div className="space-y-5">
-                                <label className="flex cursor-pointer items-center justify-center border-2 border-dashed border-[var(--line)] bg-white px-6 py-10 text-center">
+                                <label className="flex cursor-pointer items-center justify-center border-2 border-dashed border-[var(--line)] bg-white px-6 py-10 text-center hover:bg-gray-50 transition-colors">
                                     <div>
                                         <FileText className="mx-auto h-10 w-10 text-[var(--coral)]" />
                                         <div className="mt-4 font-black uppercase tracking-[0.14em]">Выбрать CSV или JSON файл</div>
                                         <div className="mt-2 text-sm text-[var(--muted)]">Можно повторно загружать файл после правок.</div>
-                                        {importFileName && <div className="mt-4 text-sm font-semibold text-[var(--blue)]">{importFileName}</div>}
+                                        {importFileName && <div className="mt-4 text-sm font-bold text-[var(--blue)] bg-blue-50 py-2 border-2 border-blue-200">{importFileName}</div>}
                                     </div>
                                     <input type="file" accept=".csv,.json,application/json,text/csv" className="hidden" onChange={event => void handleImportFileChange(event)} />
                                 </label>
 
                                 <div className="grid gap-3 md:grid-cols-3">
-                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold">
+                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
                                         <input type="checkbox" checked={importOptions.updateExisting} onChange={event => setImportOptions(previous => ({ ...previous, updateExisting: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
                                         <span>Обновлять существующие альбомы</span>
                                     </label>
-                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold">
+                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
                                         <input type="checkbox" checked={importOptions.createMissingArtists} onChange={event => setImportOptions(previous => ({ ...previous, createMissingArtists: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
                                         <span>Создавать новых артистов</span>
                                     </label>
-                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold">
+                                    <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
                                         <input type="checkbox" checked={importOptions.createMissingGenres} onChange={event => setImportOptions(previous => ({ ...previous, createMissingGenres: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
                                         <span>Создавать новые жанры</span>
                                     </label>
                                 </div>
 
-                                <button onClick={() => void handleImportAlbums()} disabled={importLoading || importRows.length === 0} className="inline-flex items-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-4 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60">
+                                <button onClick={() => void handleImportAlbums()} disabled={importLoading || importRows.length === 0} className="inline-flex items-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-4 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-gray-800 transition-colors">
                                     <Upload className="h-5 w-5" />
                                     {importLoading ? 'Импортируем...' : 'Запустить импорт'}
                                 </button>
@@ -6804,15 +7128,16 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                 </div>
             )}
 
+            {/* МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ АЛЬБОМА */}
             {editingAlbum && editForm && (
-                <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-6">
-                    <div className="max-h-[92vh] w-full max-w-4xl overflow-auto bg-[var(--paper-soft)] p-6 poster-border md:p-8">
-                        <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm">
+                    <div className="max-h-[92vh] w-full max-w-4xl overflow-auto bg-[var(--paper-soft)] p-6 poster-border md:p-8 relative border-2 border-[var(--line)]">
+                        <div className="mb-6 flex items-center justify-between gap-4 border-b-2 border-[var(--line)] pb-4">
                             <div>
                                 <div className="text-xs font-black uppercase tracking-[0.18em] text-[var(--coral)]">Редактирование</div>
                                 <h2 className="display-font mt-2 text-5xl leading-none">Изменить альбом</h2>
                             </div>
-                            <button onClick={() => setEditingAlbum(null)} className="border-2 border-[var(--line)] bg-white px-4 py-3 font-black uppercase tracking-[0.12em]">
+                            <button onClick={() => setEditingAlbum(null)} className="border-2 border-[var(--line)] bg-white px-4 py-3 font-black uppercase tracking-[0.12em] hover:bg-gray-100 transition-colors">
                                 Закрыть
                             </button>
                         </div>
@@ -6826,11 +7151,13 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                             onSubmit={handleUpdateAlbum}
                             submitText="Сохранить изменения"
                             loading={editLoading}
+                            originalStock={editingAlbum.stockQuantity}
                         />
                     </div>
                 </div>
             )}
 
+            {/* ДИАЛОГ УДАЛЕНИЯ АЛЬБОМА */}
             <ConfirmDialog
                 open={Boolean(pendingDeleteAlbum)}
                 title="Удалить альбом?"
@@ -6846,7 +7173,6 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
         </main>
     );
 }
-
 
 
 ================================================================================
@@ -7240,6 +7566,8 @@ import type { Album, Artist, Genre } from '../types';
 import AlbumCard from '../components/AlbumCard';
 import { AlertTriangle, ArrowDown, Disc3, Filter, Package, Search, Truck, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import PopularAlbums from '../components/PopularAlbums';
+import WeeklyShowcase from '../components/WeeklyShowcase';
 
 const CATALOG_PAGE_SIZE = 100;
 
@@ -7250,28 +7578,6 @@ type CatalogResponse = {
     pageSize: number;
     totalPages: number;
 };
-
-const makeDemoCover = (title: string, artist: string, seed: number) => {
-    const palettes = [
-        ['#f05a3b', '#f4c84b', '#15110f'],
-        ['#2e5f8f', '#9ed8c3', '#15110f'],
-        ['#15110f', '#f4eadf', '#f05a3b'],
-        ['#9ed8c3', '#f4c84b', '#2e5f8f'],
-        ['#f4c84b', '#f05a3b', '#15110f'],
-        ['#f4eadf', '#2e5f8f', '#15110f'],
-    ];
-    const [bg, accent, ink] = palettes[seed % palettes.length];
-    const safeTitle = title.replace(/[<&>"]/g, '');
-    const safeArtist = artist.replace(/[<&>"]/g, '');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900"><rect width="900" height="900" fill="${bg}"/><circle cx="450" cy="450" r="292" fill="${accent}" stroke="${ink}" stroke-width="24"/><circle cx="450" cy="450" r="92" fill="${bg}" stroke="${ink}" stroke-width="18"/><path d="M82 112H818M82 788H818" stroke="${ink}" stroke-width="18"/><text x="82" y="216" font-family="Arial Black, Arial" font-size="72" font-weight="900" fill="${ink}">${safeTitle.slice(0, 16)}</text><text x="82" y="730" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="8" fill="${ink}">${safeArtist.slice(0, 22).toUpperCase()}</text></svg>`;
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-};
-
-const fallbackShowcase = [
-    { id: 101, title: 'Blue Room', artist: 'Jazz Archive', imageURL: undefined, seed: 1 },
-    { id: 102, title: 'Night Press', artist: 'Indie Select', imageURL: undefined, seed: 2 },
-    { id: 103, title: 'Soul Cuts', artist: 'Vinyl Store', imageURL: undefined, seed: 3 },
-];
 
 const serviceCards = [
     {
@@ -7306,6 +7612,7 @@ export default function Catalog() {
     const [loadError, setLoadError] = useState<string | null>(null);
     const { isAuthenticated } = useAuth();
 
+    // 1. Хук загрузки всех данных
     useEffect(() => {
         const fetchAllAlbums = async () => {
             const firstPage = await api.get<CatalogResponse>('/albums', {
@@ -7355,6 +7662,7 @@ export default function Catalog() {
         void fetchData();
     }, []);
 
+    // 2. Хук загрузки рекомендаций
     useEffect(() => {
         const fetchRecs = async () => {
             if (!isAuthenticated) {
@@ -7376,17 +7684,9 @@ export default function Catalog() {
         void fetchRecs();
     }, [isAuthenticated]);
 
+    // 3. Хук фильтрации и поиска
     useEffect(() => {
         let result = [...albums];
-
-        if (search) {
-            const term = search.toLowerCase();
-            result = result.filter(album =>
-                album.title.toLowerCase().includes(term) ||
-                album.artist?.name.toLowerCase().includes(term) ||
-                album.genre?.name.toLowerCase().includes(term)
-            );
-        }
 
         if (selectedGenre) {
             result = result.filter(album => album.genreID === selectedGenre);
@@ -7394,6 +7694,34 @@ export default function Catalog() {
 
         if (selectedArtist) {
             result = result.filter(album => album.artistID === selectedArtist);
+        }
+
+        if (search.trim()) {
+            const term = search.trim();
+            const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const wordBoundaryRegex = new RegExp(`(^|[\\s\\-.,()/])${escapedTerm}`, 'i');
+
+            result = result.filter(album => {
+                const title = album.title || '';
+                const artistName = album.artist?.name || '';
+                return wordBoundaryRegex.test(title) || wordBoundaryRegex.test(artistName);
+            });
+
+            const termLower = term.toLowerCase();
+            result.sort((a, b) => {
+                const titleA = a.title ? a.title.toLowerCase().trim() : '';
+                const artistA = a.artist?.name ? a.artist.name.toLowerCase().trim() : '';
+                const titleB = b.title ? b.title.toLowerCase().trim() : '';
+                const artistB = b.artist?.name ? b.artist.name.toLowerCase().trim() : '';
+
+                const aStarts = titleA.startsWith(termLower) || artistA.startsWith(termLower);
+                const bStarts = titleB.startsWith(termLower) || artistB.startsWith(termLower);
+
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+
+                return titleA.localeCompare(titleB);
+            });
         }
 
         setFiltered(result);
@@ -7420,16 +7748,6 @@ export default function Catalog() {
     const genreLabels = genres.length > 0
         ? genres.slice(0, 5).map(genre => genre.name)
         : ['Jazz', 'Rock', 'Soul', 'Hip-hop', 'Electronic'];
-
-    const showcaseRecords = albums.length > 0
-        ? albums.slice(0, 3).map(album => ({
-            id: album.albumID,
-            title: album.title,
-            artist: album.artist?.name || 'Vinyl Store',
-            imageURL: album.imageURL,
-            seed: album.albumID,
-        }))
-        : fallbackShowcase;
 
     return (
         <main>
@@ -7470,30 +7788,9 @@ export default function Catalog() {
                         </div>
                     </div>
 
+                    {/* ДИНАМИЧЕСКАЯ ВИТРИНА НЕДЕЛИ */}
                     <div className="lg:col-span-5 lg:self-end">
-                        <div className="poster-border rotate-1 bg-[var(--paper-soft)] p-5">
-                            <div className="border-b-2 border-[var(--line)] pb-4 text-xs font-black uppercase tracking-[0.18em] text-[var(--coral)]">
-                                Витрина недели
-                            </div>
-                            <div className="grid grid-cols-3 gap-3 pt-5">
-                                {showcaseRecords.map((record, index) => (
-                                    <img
-                                        key={record.id}
-                                        src={record.imageURL || makeDemoCover(record.title, record.artist, record.seed)}
-                                        alt={record.title}
-                                        onError={(event) => {
-                                            event.currentTarget.onerror = null;
-                                            event.currentTarget.src = makeDemoCover(record.title, record.artist, record.seed);
-                                        }}
-                                        className={`aspect-square w-full border-2 border-[var(--line)] object-cover ${index === 1 ? 'translate-y-8' : ''}`}
-                                    />
-                                ))}
-                            </div>
-                            <p className="mt-10 border-t-2 border-[var(--line)] pt-4 text-sm font-bold leading-6 text-[var(--muted)]">
-                                Каждая позиция в каталоге выглядит как полноценный релиз: обложка, артист, жанр,
-                                год и понятное описание вместо пустой заглушки.
-                            </p>
-                        </div>
+                        <WeeklyShowcase />
                     </div>
                 </div>
             </section>
@@ -7515,6 +7812,9 @@ export default function Catalog() {
                         <span>{loadError}</span>
                     </div>
                 )}
+
+                {/* ХИТ-ПАРАД ПОПУЛЯРНЫХ ДИСКОВ */}
+                <PopularAlbums />
 
                 {isAuthenticated && (
                     <div className="mb-12 border-y-2 border-[var(--line)] py-8">
@@ -7556,7 +7856,7 @@ export default function Catalog() {
                             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--coral)]" />
                             <input
                                 type="text"
-                                placeholder="Например: Kind of Blue, Radiohead, trip-hop"
+                                placeholder="Например: Kind of Blue, Radiohead"
                                 value={search}
                                 onChange={event => setSearch(event.target.value)}
                                 className="h-13 w-full border-2 border-[var(--line)] bg-white py-3 pl-12 pr-4 text-base font-bold outline-none focus:bg-[var(--sun)]/20"
@@ -7566,7 +7866,7 @@ export default function Catalog() {
                         <select
                             value={selectedGenre || ''}
                             onChange={event => setSelectedGenre(event.target.value ? Number(event.target.value) : null)}
-                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none"
+                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none cursor-pointer"
                         >
                             <option value="">Все жанры</option>
                             {genres.map(genre => <option key={genre.genreID} value={genre.genreID}>{genre.name}</option>)}
@@ -7575,7 +7875,7 @@ export default function Catalog() {
                         <select
                             value={selectedArtist || ''}
                             onChange={event => setSelectedArtist(event.target.value ? Number(event.target.value) : null)}
-                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none"
+                            className="h-13 border-2 border-[var(--line)] bg-white px-4 py-3 font-bold outline-none cursor-pointer"
                         >
                             <option value="">Все артисты</option>
                             {artists.map(artist => <option key={artist.artistID} value={artist.artistID}>{artist.name}</option>)}
@@ -7636,19 +7936,23 @@ export default function Catalog() {
 }
 
 
-
 ================================================================================
 FILE: vinyl-store-frontend\src\pages\Checkout.tsx
 ================================================================================
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Gift, Truck } from 'lucide-react';
+import { CheckCircle2, Gift, Truck, AlertCircle } from 'lucide-react';
+import { AddressSuggestions } from 'react-dadata';
+import 'react-dadata/dist/react-dadata.css';
 import api from '../api/api';
 import Toast, { type ToastState } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 const formatPrice = (value: number) => value.toLocaleString('ru-RU');
+
+// Ваш API ключ DaData
+const DADATA_API_KEY = "c560feed5b5c24e324ebaaf1f0fd54ecd8aae7a2";
 
 export default function Checkout() {
     const { isAuthenticated } = useAuth();
@@ -7659,16 +7963,15 @@ export default function Checkout() {
     const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
     const [toast, setToast] = useState<ToastState>({ open: false, type: 'success', title: '' });
 
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
     const selectedParam = new URLSearchParams(location.search).get('selected');
     const selectedAlbumIds = selectedParam
         ? selectedParam.split(',').map(value => Number(value)).filter(value => Number.isFinite(value) && value > 0)
         : [];
 
     const selectedItems = useMemo(() => {
-        if (selectedAlbumIds.length === 0) {
-            return cart;
-        }
-
+        if (selectedAlbumIds.length === 0) return cart;
         const selectedSet = new Set(selectedAlbumIds);
         const filtered = cart.filter(item => selectedSet.has(item.albumID));
         return filtered.length > 0 ? filtered : cart;
@@ -7688,6 +7991,76 @@ export default function Checkout() {
         giftMessage: '',
     });
 
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        const hasDigits = /\d/;
+
+        // 1. Имя и Фамилия (строгая проверка на 2 слова)
+        const nameParts = form.name.trim().split(/\s+/); // Разбиваем по пробелам
+
+        if (!form.name.trim()) {
+            newErrors.name = 'Укажите ваше имя и фамилию';
+        } else if (nameParts.length < 2) {
+            newErrors.name = 'Укажите и имя, и фамилию (через пробел)';
+        } else if (hasDigits.test(form.name)) {
+            newErrors.name = 'Имя и фамилия не могут содержать цифры';
+        }
+
+        // 2. Телефон
+        const digitsOnly = form.phone.replace(/\D/g, '');
+        if (!form.phone.trim()) {
+            newErrors.phone = 'Укажите номер телефона';
+        } else if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+            newErrors.phone = 'Некорректный номер (введите телефон полностью)';
+        }
+
+        // 3. Адрес
+        if (!form.address.trim()) {
+            newErrors.address = 'Начните вводить и выберите адрес из списка';
+        }
+
+        // 4. Подарок
+        if (form.isGift) {
+            // Имя получателя (здесь разрешаем 1 слово)
+            if (!form.giftRecipientName.trim()) {
+                newErrors.giftRecipientName = 'Укажите, кому достанется подарок';
+            } else if (hasDigits.test(form.giftRecipientName)) {
+                newErrors.giftRecipientName = 'Имя не может содержать цифры';
+            }
+
+            // Email получателя
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (form.giftRecipientEmail.trim() && !emailRegex.test(form.giftRecipientEmail.trim())) {
+                newErrors.giftRecipientEmail = 'Некорректный формат почты (пример: name@mail.ru)';
+            }
+
+            // От кого
+            if (form.giftFromName.trim() && hasDigits.test(form.giftFromName)) {
+                newErrors.giftFromName = 'Имя отправителя не может содержать цифры';
+            }
+
+            // Сообщение
+            if (form.giftMessage.trim() && hasDigits.test(form.giftMessage)) {
+                newErrors.giftMessage = 'Сообщение не может содержать цифры';
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const clearError = (field: string) => {
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: '' }));
+        }
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+        if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
+            event.preventDefault();
+        }
+    };
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
@@ -7696,23 +8069,23 @@ export default function Checkout() {
             return;
         }
 
-        if (selectedItems.length === 0) {
-            return;
-        }
+        if (selectedItems.length === 0) return;
+
+        if (!validateForm()) return;
 
         setLoading(true);
 
         try {
             const payload = {
-                name: form.name,
+                name: form.name.trim(), // Убираем лишние пробелы по краям перед отправкой
                 phone: form.phone,
                 address: form.address,
                 paymentMethod: form.paymentMethod,
                 isGift: form.isGift,
-                giftRecipientName: form.isGift ? form.giftRecipientName : null,
-                giftRecipientEmail: form.isGift ? form.giftRecipientEmail : null,
-                giftFromName: form.isGift ? form.giftFromName : null,
-                giftMessage: form.isGift ? form.giftMessage : null,
+                giftRecipientName: form.isGift ? form.giftRecipientName.trim() : null,
+                giftRecipientEmail: form.isGift ? form.giftRecipientEmail.trim() : null,
+                giftFromName: form.isGift ? form.giftFromName.trim() : null,
+                giftMessage: form.isGift ? form.giftMessage.trim() : null,
             };
 
             const cartItemIds = selectedItems
@@ -7720,10 +8093,7 @@ export default function Checkout() {
                 .filter((value): value is number => typeof value === 'number');
 
             const response = usesServerCart && cartItemIds.length === selectedItems.length
-                ? await api.post('/cart/checkout', {
-                    ...payload,
-                    cartItemIds,
-                })
+                ? await api.post('/cart/checkout', { ...payload, cartItemIds })
                 : await api.post('/orders', {
                     ...payload,
                     items: selectedItems.map(item => ({
@@ -7839,25 +8209,51 @@ export default function Checkout() {
                         <h2 className="display-font text-4xl leading-none">Доставка</h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-5" noValidate>
+
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Имя и фамилия</span>
-                            <input value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <input
+                                value={form.name}
+                                onChange={event => { setForm({ ...form, name: event.target.value }); clearError('name'); }}
+                                className={`w-full border-2 bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.name ? 'border-red-500 text-red-900 bg-red-50' : 'border-[var(--line)]'}`}
+                            />
+                            {errors.name && <span className="text-red-600 font-semibold text-sm mt-2 flex items-center gap-1"><AlertCircle size={16}/>{errors.name}</span>}
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Телефон</span>
-                            <input type="tel" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <input
+                                type="tel"
+                                placeholder="+7 (___) ___-__-__"
+                                value={form.phone}
+                                onChange={event => { setForm({ ...form, phone: event.target.value }); clearError('phone'); }}
+                                className={`w-full border-2 bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.phone ? 'border-red-500 text-red-900 bg-red-50' : 'border-[var(--line)]'}`}
+                            />
+                            {errors.phone && <span className="text-red-600 font-semibold text-sm mt-2 flex items-center gap-1"><AlertCircle size={16}/>{errors.phone}</span>}
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Адрес доставки</span>
-                            <textarea value={form.address} onChange={event => setForm({ ...form, address: event.target.value })} rows={3} className="w-full resize-y border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none focus:bg-[var(--sun)]/20" required />
+                            <div className={`border-2 bg-white focus-within:bg-[var(--sun)]/20 ${errors.address ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}>
+                                <AddressSuggestions
+                                    token={DADATA_API_KEY}
+                                    onChange={(suggestion) => {
+                                        setForm({ ...form, address: suggestion?.value || '' });
+                                        clearError('address');
+                                    }}
+                                    inputProps={{
+                                        placeholder: 'Начните вводить город и улицу...',
+                                        className: `w-full px-5 py-4 text-lg font-bold outline-none bg-transparent ${errors.address ? 'text-red-900' : ''}`,
+                                    }}
+                                />
+                            </div>
+                            {errors.address && <span className="text-red-600 font-semibold text-sm mt-2 flex items-center gap-1"><AlertCircle size={16}/>{errors.address}</span>}
                         </label>
 
                         <label className="block">
                             <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Способ оплаты</span>
-                            <select value={form.paymentMethod} onChange={event => setForm({ ...form, paymentMethod: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none">
+                            <select value={form.paymentMethod} onChange={event => setForm({ ...form, paymentMethod: event.target.value })} className="w-full border-2 border-[var(--line)] bg-white px-5 py-4 text-lg font-bold outline-none cursor-pointer focus:bg-[var(--sun)]/20">
                                 <option value="card">Банковской картой</option>
                                 <option value="cash">Наличными при получении</option>
                                 <option value="sbp">СБП</option>
@@ -7865,23 +8261,60 @@ export default function Checkout() {
                         </label>
 
                         <div className="border-y-2 border-[var(--line)] py-5">
-                            <label className="flex items-center gap-3 font-black">
-                                <input type="checkbox" checked={form.isGift} onChange={event => setForm({ ...form, isGift: event.target.checked })} className="h-5 w-5 accent-[var(--coral)]" />
+                            <label className="flex items-center gap-3 font-black cursor-pointer">
+                                <input type="checkbox" checked={form.isGift} onChange={event => { setForm({ ...form, isGift: event.target.checked }); clearError('giftRecipientName'); }} className="h-5 w-5 accent-[var(--coral)]" />
                                 <Gift className="h-5 w-5 text-[var(--coral)]" />
                                 Купить в подарок
                             </label>
 
                             {form.isGift && (
                                 <div className="mt-5 grid gap-4 md:grid-cols-2">
-                                    <input placeholder="Имя получателя" value={form.giftRecipientName} onChange={event => setForm({ ...form, giftRecipientName: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" required />
-                                    <input placeholder="Email получателя" type="email" value={form.giftRecipientEmail} onChange={event => setForm({ ...form, giftRecipientEmail: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
-                                    <input placeholder="От кого" value={form.giftFromName} onChange={event => setForm({ ...form, giftFromName: event.target.value })} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none" />
-                                    <textarea placeholder="Сообщение к подарку" value={form.giftMessage} onChange={event => setForm({ ...form, giftMessage: event.target.value })} rows={3} className="border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none md:col-span-2" />
+                                    <div className="md:col-span-1">
+                                        <input
+                                            placeholder="Имя получателя *"
+                                            value={form.giftRecipientName}
+                                            onChange={event => { setForm({ ...form, giftRecipientName: event.target.value }); clearError('giftRecipientName'); }}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftRecipientName ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftRecipientName && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftRecipientName}</span>}
+                                    </div>
+
+                                    <div className="md:col-span-1">
+                                        <input
+                                            placeholder="Email получателя"
+                                            type="email"
+                                            value={form.giftRecipientEmail}
+                                            onChange={event => { setForm({ ...form, giftRecipientEmail: event.target.value }); clearError('giftRecipientEmail'); }}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftRecipientEmail ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftRecipientEmail && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftRecipientEmail}</span>}
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <input
+                                            placeholder="От кого"
+                                            value={form.giftFromName}
+                                            onChange={event => { setForm({ ...form, giftFromName: event.target.value }); clearError('giftFromName'); }}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftFromName ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftFromName && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftFromName}</span>}
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <textarea
+                                            placeholder="Сообщение к подарку"
+                                            value={form.giftMessage}
+                                            onChange={event => { setForm({ ...form, giftMessage: event.target.value }); clearError('giftMessage'); }}
+                                            rows={3}
+                                            className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftMessage ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
+                                        />
+                                        {errors.giftMessage && <span className="text-red-600 font-semibold text-xs mt-2 flex items-center gap-1"><AlertCircle size={14}/>{errors.giftMessage}</span>}
+                                    </div>
                                 </div>
                             )}
                         </div>
 
-                        <button type="submit" disabled={loading} className="w-full border-2 border-[var(--line)] bg-[var(--coral)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60">
+                        <button type="submit" disabled={loading} className="w-full border-2 border-[var(--line)] bg-[var(--coral)] px-6 py-5 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-[#d84a2f] transition-colors">
                             {loading ? 'Оформляем заказ...' : 'Подтвердить заказ'}
                         </button>
                     </form>
@@ -7913,7 +8346,6 @@ export default function Checkout() {
         </main>
     );
 }
-
 
 
 ================================================================================

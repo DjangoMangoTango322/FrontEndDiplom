@@ -226,14 +226,14 @@ export default function Catalog() {
                         </div>
                     </div>
 
-                    {/* ДИНАМИЧЕСКАЯ ВИТРИНА НЕДЕЛИ */}
+
                     <div className="lg:col-span-5 lg:self-end">
                         <WeeklyShowcase />
                     </div>
                 </div>
             </section>
 
-            <section className="mx-auto grid max-w-7xl gap-5 px-5 py-10 md:grid-cols-3 md:px-8">
+            <section className="mx-auto grid max-w-7xl gap-5 px-5 py-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 md:px-8">
                 {serviceCards.map(({ title, text, Icon }) => (
                     <article key={title} className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-5">
                         <Icon className="h-7 w-7 text-[var(--coral)]" />
@@ -269,7 +269,7 @@ export default function Catalog() {
                         {recLoading ? (
                             <div className="mt-6 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-7 font-bold">Собираем рекомендации...</div>
                         ) : recommended.length > 0 ? (
-                            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {recommended.map(album => <AlbumCard key={`rec-${album.albumID}`} album={album} />)}
                             </div>
                         ) : (
@@ -347,14 +347,14 @@ export default function Catalog() {
                         <div className="mb-7 border-2 border-[var(--line)] bg-[var(--paper-soft)] p-7 font-bold">
                             Загружаем каталог пластинок...
                         </div>
-                        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
                             {Array.from({ length: 4 }).map((_, index) => (
                                 <div key={index} className="h-[420px] animate-pulse border-2 border-[var(--line)] bg-[var(--paper-soft)]" />
                             ))}
                         </div>
                     </div>
                 ) : filtered.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
                         {filtered.map(album => <AlbumCard key={album.albumID} album={album} />)}
                     </div>
                 ) : (

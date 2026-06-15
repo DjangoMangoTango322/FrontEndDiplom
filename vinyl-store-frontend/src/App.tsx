@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { ArrowUpRight, Disc3, Mail, MapPin, Phone } from 'lucide-react';
+import { Toaster } from 'react-hot-toast'; // <-- Добавили импорт Toaster
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './context/FavoritesContext';
@@ -8,6 +9,7 @@ import Navbar from './components/Navbar';
 import VinylBackground from './components/VinylBackground';
 import Catalog from './pages/Catalog';
 import Cart from './pages/Cart';
+
 import Login from './pages/Login';
 import Checkout from './pages/Checkout';
 
@@ -80,6 +82,9 @@ export default function App() {
             <AuthProvider>
                 <FavoritesProvider>
                     <CartProvider>
+                        {/* Добавляем Toaster здесь, чтобы уведомления работали во всем приложении */}
+                        <Toaster position="bottom-right" toastOptions={{ duration: 3000 }} />
+
                         <div className="relative isolate min-h-screen flex flex-col text-[var(--ink)]">
                             <VinylBackground />
                             <Navbar />
@@ -95,7 +100,6 @@ export default function App() {
                                     <Route path="/favorites" element={<Suspense fallback={<Loader />}><Favorites /></Suspense>} />
                                     <Route path="/admin" element={<Suspense fallback={<Loader />}><Admin /></Suspense>} />
                                     <Route path="/album/:id" element={<Suspense fallback={<Loader />}><AlbumDetail /></Suspense>} />
-
                                 </Routes>
                             </main>
                             <Footer />
