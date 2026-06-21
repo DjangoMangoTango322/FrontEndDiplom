@@ -118,13 +118,14 @@ export default function AlbumCard({ album }: Props) {
             </article>
 
             {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4" onClick={() => setShowModal(false)}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 sm:p-6" onClick={() => setShowModal(false)}>
+                    {/* Исправлено: overflow-y-auto overflow-x-hidden жестко отключает горизонтальный скролл */}
                     <div
-                        className="max-h-[92vh] w-full max-w-5xl overflow-auto bg-[var(--paper-soft)] poster-border"
+                        className="max-h-[95vh] w-full max-w-5xl overflow-y-auto overflow-x-hidden bg-[var(--paper-soft)] poster-border"
                         onClick={(event) => event.stopPropagation()}
                     >
                         <div className="grid lg:grid-cols-2">
-                            <div className="relative min-h-[320px] border-b-2 border-[var(--line)] bg-[var(--sun)] lg:border-b-0 lg:border-r-2">
+                            <div className="relative min-h-[280px] sm:min-h-[320px] border-b-2 border-[var(--line)] bg-[var(--sun)] lg:border-b-0 lg:border-r-2">
                                 <img
                                     src={album.imageURL || fallbackCover}
                                     alt={album.title}
@@ -132,7 +133,7 @@ export default function AlbumCard({ album }: Props) {
                                         event.currentTarget.onerror = null;
                                         event.currentTarget.src = fallbackCover;
                                     }}
-                                    className="h-full min-h-[320px] w-full object-cover"
+                                    className="h-full min-h-[280px] sm:min-h-[320px] w-full object-cover"
                                 />
                                 <button
                                     onClick={() => setShowModal(false)}
@@ -143,7 +144,7 @@ export default function AlbumCard({ album }: Props) {
                                 </button>
                             </div>
 
-                            <div className="flex flex-col p-7 md:p-10">
+                            <div className="flex flex-col p-6 sm:p-8 lg:p-10">
                                 <div className="flex flex-wrap gap-2">
                                     <span className="border-2 border-[var(--line)] bg-[var(--mint)] px-3 py-1 text-xs font-black uppercase tracking-[0.16em]">
                                         {album.genre?.name || 'LP'}
@@ -153,53 +154,54 @@ export default function AlbumCard({ album }: Props) {
                                     </span>
                                 </div>
 
-                                <h2 className="display-font mt-6 text-5xl leading-[0.92] md:text-7xl">{album.title}</h2>
-                                <p className="mt-4 text-2xl font-bold text-[var(--blue)]">{artistName}</p>
+                                <h2 className="display-font mt-6 text-4xl sm:text-5xl lg:text-7xl leading-[0.92]">{album.title}</h2>
+                                <p className="mt-3 sm:mt-4 text-xl sm:text-2xl font-bold text-[var(--blue)]">{artistName}</p>
 
-                                <p className="mt-8 max-w-prose text-lg leading-8 text-[var(--muted)]">
+                                <p className="mt-6 sm:mt-8 max-w-prose text-base sm:text-lg leading-7 sm:leading-8 text-[var(--muted)]">
                                     {description}
                                 </p>
 
-                                <div className="mt-8 flex items-start gap-3 border-y-2 border-[var(--line)] py-5">
+                                <div className="mt-6 sm:mt-8 flex items-start gap-3 border-y-2 border-[var(--line)] py-5">
                                     <Info className="mt-1 h-5 w-5 text-[var(--coral)] shrink-0" />
                                     <div className="text-sm font-semibold text-[var(--muted)]">
                                         В наличии {album.stockQuantity} шт. Мы бережно упакуем пластинку в плотный mailer перед отправкой.
                                     </div>
                                 </div>
 
-                                <div className="mt-8">
+                                <div className="mt-6 sm:mt-8">
                                     <AlbumPreviewPlayer album={album} />
                                 </div>
 
-                                {/* Исправленный блок с ценой и кнопками */}
-                                <div className="mt-auto flex flex-col gap-8 pt-8 xl:flex-row xl:items-end xl:justify-between">
-                                    <div className="shrink-0">
+                                {/* Исправленный блок стоимости и кнопок (кнопки друг под другом) */}
+                                <div className="mt-auto flex flex-col md:flex-row gap-8 pt-8 md:items-end justify-between">
+                                    <div className="shrink-0 mb-2 md:mb-0">
                                         <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)] mb-2">Стоимость</div>
-                                        <div className="display-font flex items-baseline gap-2 text-6xl leading-none whitespace-nowrap">
-                                            {formatPrice(album.price)} <span className="text-4xl text-[var(--ink)]">₽</span>
+                                        <div className="display-font flex items-baseline gap-2 text-5xl lg:text-6xl leading-none whitespace-nowrap">
+                                            {formatPrice(album.price)} <span className="text-3xl lg:text-4xl text-[var(--ink)]">₽</span>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
+                                    {/* Блок кнопок строго вертикально (друг под другом) */}
+                                    <div className="flex flex-col gap-3 w-full md:w-[240px] lg:w-[260px] shrink-0">
                                         <button
                                             onClick={(event) => {
                                                 event.stopPropagation();
                                                 void toggleFavorite(album);
                                             }}
-                                            className={`flex-1 xl:flex-none inline-flex items-center justify-center gap-2 border-2 border-[var(--line)] px-5 py-4 font-black uppercase tracking-[0.1em] text-sm transition-colors ${
+                                            className={`inline-flex items-center justify-center gap-2 border-2 border-[var(--line)] px-5 py-4 font-black uppercase tracking-[0.1em] text-sm transition-colors ${
                                                 favorite ? 'bg-[var(--sun)] text-[var(--coral)]' : 'bg-white hover:bg-gray-50'
                                             }`}
                                         >
                                             <Heart className={`h-5 w-5 shrink-0 ${favorite ? 'fill-current' : ''}`} />
-                                            <span className="whitespace-nowrap">{favorite ? 'В избранном' : 'В избранное'}</span>
+                                            <span className="truncate">{favorite ? 'В избранном' : 'В избранное'}</span>
                                         </button>
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={album.stockQuantity === 0}
-                                            className="flex-1 xl:flex-none inline-flex items-center justify-center gap-2 border-2 border-[var(--line)] bg-[var(--ink)] px-5 py-4 font-black uppercase tracking-[0.1em] text-sm text-white transition-transform hover:-translate-y-0.5 disabled:opacity-45"
+                                            className="inline-flex items-center justify-center gap-2 border-2 border-[var(--line)] bg-[var(--ink)] px-5 py-4 font-black uppercase tracking-[0.1em] text-sm text-white transition-transform hover:translate-y-[1px] disabled:opacity-45"
                                         >
                                             <ShoppingBag className="h-5 w-5 shrink-0" />
-                                            <span className="whitespace-nowrap">В корзину</span>
+                                            <span className="truncate">В корзину</span>
                                         </button>
                                     </div>
                                 </div>
