@@ -136,7 +136,7 @@ export default function AlbumCard({ album }: Props) {
                                 />
                                 <button
                                     onClick={() => setShowModal(false)}
-                                    className="absolute right-4 top-4 grid h-12 w-12 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)]"
+                                    className="absolute right-4 top-4 grid h-12 w-12 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-gray-100 transition-colors"
                                     title="Закрыть"
                                 >
                                     <X className="h-5 w-5" />
@@ -161,7 +161,7 @@ export default function AlbumCard({ album }: Props) {
                                 </p>
 
                                 <div className="mt-8 flex items-start gap-3 border-y-2 border-[var(--line)] py-5">
-                                    <Info className="mt-1 h-5 w-5 text-[var(--coral)]" />
+                                    <Info className="mt-1 h-5 w-5 text-[var(--coral)] shrink-0" />
                                     <div className="text-sm font-semibold text-[var(--muted)]">
                                         В наличии {album.stockQuantity} шт. Мы бережно упакуем пластинку в плотный mailer перед отправкой.
                                     </div>
@@ -171,33 +171,39 @@ export default function AlbumCard({ album }: Props) {
                                     <AlbumPreviewPlayer album={album} />
                                 </div>
 
-                                <div className="mt-auto flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
-                                    <div>
-                                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)]">Стоимость</div>
-                                        <div className="display-font text-6xl leading-none">{formatPrice(album.price)} ₽</div>
+                                {/* Исправленный блок с ценой и кнопками */}
+                                <div className="mt-auto flex flex-col gap-8 pt-8 xl:flex-row xl:items-end xl:justify-between">
+                                    <div className="shrink-0">
+                                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[var(--coral)] mb-2">Стоимость</div>
+                                        <div className="display-font flex items-baseline gap-2 text-6xl leading-none whitespace-nowrap">
+                                            {formatPrice(album.price)} <span className="text-4xl text-[var(--ink)]">₽</span>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col gap-3 sm:items-end">
+
+                                    <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
                                         <button
                                             onClick={(event) => {
                                                 event.stopPropagation();
                                                 void toggleFavorite(album);
                                             }}
-                                            className={`inline-flex items-center justify-center gap-3 border-2 border-[var(--line)] px-8 py-4 font-black uppercase tracking-[0.13em] ${
-                                                favorite ? 'bg-[var(--sun)] text-[var(--coral)]' : 'bg-white'
+                                            className={`flex-1 xl:flex-none inline-flex items-center justify-center gap-2 border-2 border-[var(--line)] px-5 py-4 font-black uppercase tracking-[0.1em] text-sm transition-colors ${
+                                                favorite ? 'bg-[var(--sun)] text-[var(--coral)]' : 'bg-white hover:bg-gray-50'
                                             }`}
                                         >
-                                            <Heart className={`h-5 w-5 ${favorite ? 'fill-current' : ''}`} />
-                                            {favorite ? 'В избранном' : 'В избранное'}
+                                            <Heart className={`h-5 w-5 shrink-0 ${favorite ? 'fill-current' : ''}`} />
+                                            <span className="whitespace-nowrap">{favorite ? 'В избранном' : 'В избранное'}</span>
                                         </button>
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={album.stockQuantity === 0}
-                                            className="inline-flex items-center justify-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-8 py-4 font-black uppercase tracking-[0.13em] text-white transition-transform hover:-translate-y-0.5 disabled:opacity-45"
+                                            className="flex-1 xl:flex-none inline-flex items-center justify-center gap-2 border-2 border-[var(--line)] bg-[var(--ink)] px-5 py-4 font-black uppercase tracking-[0.1em] text-sm text-white transition-transform hover:-translate-y-0.5 disabled:opacity-45"
                                         >
-                                            <ShoppingBag className="h-5 w-5" /> В корзину
+                                            <ShoppingBag className="h-5 w-5 shrink-0" />
+                                            <span className="whitespace-nowrap">В корзину</span>
                                         </button>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
