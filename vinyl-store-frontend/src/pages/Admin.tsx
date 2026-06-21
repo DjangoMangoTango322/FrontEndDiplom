@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import { AlertTriangle, Edit, FileText, Plus, RefreshCcw, Search, Shield, Trash2, Upload, Package, AlertCircle } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Edit, FileText, Plus, RefreshCcw, Search, Shield, Trash2, Upload, Package, AlertCircle, Eye, X, User, MapPin, CreditCard, Gift as GiftIcon } from 'lucide-react';
 import api from '../api/api';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Toast, { type ToastState } from '../components/Toast';
@@ -30,6 +30,19 @@ interface Order {
     totalAmount: number;
     status: string;
     orderDate: string;
+    // Поля для просмотра деталей заказа
+    deliveryAddress?: string;
+    paymentMethod?: string;
+    isGift?: boolean;
+    giftRecipientName?: string;
+    giftRecipientEmail?: string;
+    giftFromName?: string;
+    giftMessage?: string;
+    items?: Array<{
+        album: { title: string };
+        quantity: number;
+        priceAtPurchase: number;
+    }>;
 }
 
 type CatalogResponse = {
@@ -88,7 +101,6 @@ const mapApiValidationErrors = (payload: unknown): AdminAlbumFormErrors => {
     };
 };
 
-// Добавлен новый проп: originalStock
 type AlbumFormFieldsProps = {
     form: AdminAlbumForm;
     errors: AdminAlbumFormErrors;
@@ -97,7 +109,7 @@ type AlbumFormFieldsProps = {
     onChange: <K extends keyof AdminAlbumForm>(field: K, value: AdminAlbumForm[K]) => void;
     submitText: string;
     loading: boolean;
-    onSubmit: (event: FormEvent) => void;
+    onSubmit: (event: React.FormEvent) => void;
     originalStock?: number;
 };
 
@@ -110,7 +122,7 @@ function AlbumFormFields({
                              submitText,
                              loading,
                              onSubmit,
-                             originalStock // Получаем оригинальный остаток, если это форма редактирования
+                             originalStock
                          }: AlbumFormFieldsProps) {
     const inputClass = 'w-full border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20';
 
@@ -152,11 +164,10 @@ function AlbumFormFields({
                 {errors.price && <div className="mt-2 text-sm font-semibold text-red-700">{errors.price}</div>}
             </label>
 
-            {/* ИЗМЕНЕНО ПОЛЕ ОСТАТКА НА СКЛАДЕ */}
             <label>
                 <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">
                     {originalStock !== undefined
-                        ? `Добавить на склад (Сейчас в наличии: ${originalStock} шт.)`
+                        ? `Добавить на склад (Сейчас: ${originalStock} шт.)`
                         : fieldLabels.stockQuantity}
                 </span>
                 <input
@@ -164,7 +175,7 @@ function AlbumFormFields({
                     value={form.stockQuantity}
                     onChange={event => onChange('stockQuantity', event.target.value)}
                     className={inputClass}
-                    placeholder={originalStock !== undefined ? "Например: 5 (или -2 для списания)" : ""}
+                    placeholder={originalStock !== undefined ? "Например: 5 (или -2)" : ""}
                 />
                 {errors.stockQuantity && <div className="mt-2 text-sm font-semibold text-red-700">{errors.stockQuantity}</div>}
             </label>
@@ -201,6 +212,10 @@ export default function Admin() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
 
+    // Стейты для просмотра деталей заказа
+    const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+
     const [createForm, setCreateForm] = useState<AdminAlbumForm>(createEmptyAlbumForm());
     const [createErrors, setCreateErrors] = useState<AdminAlbumFormErrors>({});
     const [createLoading, setCreateLoading] = useState(false);
@@ -212,6 +227,8 @@ export default function Admin() {
 
     const [pendingDeleteAlbum, setPendingDeleteAlbum] = useState<Album | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
+
+    const [addStockInputs, setAddStockInputs] = useState<Record<number, string>>({});
 
     const [importRows, setImportRows] = useState<ParsedAlbumImportRow[]>([]);
     const [importValidationErrors, setImportValidationErrors] = useState<ParsedImportValidationError[]>([]);
@@ -241,6 +258,18 @@ export default function Admin() {
         }
     };
 
+    const handleViewOrderDetails = async (orderId: number) => {
+        setDetailsLoading(true);
+        try {
+            const response = await api.get<Order>(`/orders/${orderId}/details`);
+            setViewingOrder(response.data);
+        } catch (error) {
+            showToast('error', 'Ошибка', 'Не удалось загрузить детали заказа');
+        } finally {
+            setDetailsLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (activeTab === 'orders' && orders.length === 0) {
             void fetchOrders();
@@ -253,7 +282,8 @@ export default function Admin() {
             setOrders(prev => prev.map(o => o.orderID === orderId ? { ...o, status: newStatus } : o));
             showToast('success', 'Статус обновлен', `Заказ #${orderId} переведен в статус "${newStatus}"`);
         } catch (error) {
-            showToast('error', 'Ошибка', 'Не удалось изменить статус заказа');
+            const msg = getFirstApiErrorMessage((error as any).response?.data) || 'Не удалось изменить статус заказа';
+            showToast('error', 'Ошибка', msg);
         }
     };
 
@@ -325,7 +355,31 @@ export default function Admin() {
         });
     };
 
-    const handleCreateAlbum = async (event: FormEvent) => {
+    const handleAddStock = async (albumId: number) => {
+        const val = parseInt(addStockInputs[albumId] || '0', 10);
+
+        if (isNaN(val) || val <= 0) {
+            showToast('error', 'Ошибка', 'Введите корректное число дисков для добавления.');
+            return;
+        }
+
+        try {
+            const response = await api.patch<{message: string, newStockQuantity: number}>(`/albums/${albumId}/add-stock`, {
+                quantityToAdd: val
+            });
+
+            setAlbums(prev => prev.map(a =>
+                a.albumID === albumId ? { ...a, stockQuantity: response.data.newStockQuantity } : a
+            ));
+
+            setAddStockInputs(prev => ({ ...prev, [albumId]: '' }));
+            showToast('success', 'Остаток пополнен', response.data.message);
+        } catch (error) {
+            showToast('error', 'Не удалось пополнить', 'Произошла ошибка при обновлении базы данных.');
+        }
+    };
+
+    const handleCreateAlbum = async (event: React.FormEvent) => {
         event.preventDefault();
         const validationErrors = validateAdminAlbumForm(createForm, artists, genres);
         setCreateErrors(validationErrors);
@@ -354,23 +408,19 @@ export default function Admin() {
 
     const openEditModal = (album: Album) => {
         setEditingAlbum(album);
-
         const form = albumToAdminForm(album);
-        // ИСПРАВЛЕНИЕ: Передаем '0' как строку, а не как число
         form.stockQuantity = '0';
-
         setEditForm(form);
         setEditErrors({});
     };
 
-    const handleUpdateAlbum = async (event: FormEvent) => {
+    const handleUpdateAlbum = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!editingAlbum || !editForm) return;
 
         const addedAmount = Number(editForm.stockQuantity) || 0;
         const finalStockQuantity = editingAlbum.stockQuantity + addedAmount;
 
-        // ИСПРАВЛЕНИЕ: Превращаем итоговое число обратно в строку с помощью .toString()
         const formToValidate = {
             ...editForm,
             stockQuantity: finalStockQuantity.toString()
@@ -417,7 +467,7 @@ export default function Admin() {
         }
     };
 
-    const handleImportFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
@@ -505,26 +555,26 @@ export default function Admin() {
     return (
         <main className="mx-auto max-w-7xl px-5 py-12 md:px-8">
             <div className="mb-10 flex flex-col gap-6 border-b-2 border-[var(--line)] pb-8 lg:flex-row lg:items-end lg:justify-between">
-                <div>
+                <div className="min-w-0 overflow-hidden">
                     <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--coral)]">Управление магазином</div>
-                    <h1 className="display-font mt-2 text-6xl leading-none md:text-9xl">Админ-панель</h1>
-                    <p className="mt-5 max-w-2xl text-lg leading-7 text-[var(--muted)]">
+                    <h1 className="display-font mt-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl whitespace-nowrap">Админ-панель</h1>
+                    <p className="mt-5 max-w-2xl text-base md:text-lg leading-7 text-[var(--muted)] truncate whitespace-normal">
                         Здесь можно управлять заказами, добавлять и редактировать пластинки, а также загружать данные из CSV или JSON.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 sm:min-w-[360px]">
+                <div className="grid grid-cols-3 gap-3 w-full lg:w-auto lg:min-w-[360px]">
                     <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 text-center">
-                        <div className="display-font text-5xl leading-none">{albums.length}</div>
-                        <div className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Альбомов</div>
+                        <div className="display-font text-4xl sm:text-5xl leading-none">{albums.length}</div>
+                        <div className="mt-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Альбомов</div>
                     </div>
                     <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 text-center">
-                        <div className="display-font text-5xl leading-none">{artists.length}</div>
-                        <div className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Артистов</div>
+                        <div className="display-font text-4xl sm:text-5xl leading-none">{artists.length}</div>
+                        <div className="mt-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Артистов</div>
                     </div>
                     <div className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 text-center">
-                        <div className="display-font text-5xl leading-none">{genres.length}</div>
-                        <div className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Жанров</div>
+                        <div className="display-font text-4xl sm:text-5xl leading-none">{genres.length}</div>
+                        <div className="mt-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Жанров</div>
                     </div>
                 </div>
             </div>
@@ -567,7 +617,7 @@ export default function Admin() {
 
             {/* ВКЛАДКА: ЗАКАЗЫ */}
             {activeTab === 'orders' ? (
-                <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 sm:p-6 poster-border-sm md:p-8">
                     <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
                             <h2 className="display-font text-4xl leading-none">Список заказов</h2>
@@ -578,52 +628,66 @@ export default function Admin() {
                     {ordersLoading ? (
                         <div className="py-10 text-center font-bold">Загрузка заказов...</div>
                     ) : (
-                        <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
-                            <div className="hidden grid-cols-[80px_1fr_1.5fr_1fr_1.2fr] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
-                                <span>ID</span>
-                                <span>Дата</span>
-                                <span>Клиент</span>
-                                <span>Сумма</span>
-                                <span>Статус</span>
-                            </div>
-
-                            {orders.length > 0 ? orders.map(order => {
-                                const isLocked = order.status === 'Completed' || order.status === 'Cancelled';
-                                return (
-                                    <div key={order.orderID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[80px_1fr_1.5fr_1fr_1.2fr] md:items-center">
-                                        <div className="font-black text-lg">#{order.orderID}</div>
-                                        <div className="text-sm font-semibold text-[var(--muted)]">{new Date(order.orderDate).toLocaleDateString('ru-RU')}</div>
-                                        <div>
-                                            <div className="font-bold">{order.customerName}</div>
-                                            <div className="text-sm text-[var(--muted)] mt-1">{order.customerPhone}</div>
-                                        </div>
-                                        <div className="font-black tabular-nums">{formatPrice(order.totalAmount)} ₽</div>
-                                        <div>
-                                            <select
-                                                value={order.status}
-                                                onChange={(e) => void handleStatusChange(order.orderID, e.target.value)}
-                                                disabled={isLocked}
-                                                className={`w-full border-2 px-3 py-3 font-bold outline-none cursor-pointer transition-colors ${
-                                                    isLocked
-                                                        ? 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-                                                        : 'border-[var(--line)] bg-white hover:bg-gray-50 focus:border-[var(--coral)]'
-                                                }`}
-                                            >
-                                                <option value="Pending">В ожидании</option>
-                                                <option value="Processing">В сборке</option>
-                                                <option value="Shipped">В пути</option>
-                                                <option value="Completed">Выполнен</option>
-                                                <option value="Cancelled">Отменен</option>
-                                            </select>
-                                            {isLocked && <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-red-600"><AlertCircle size={14}/> Заблокировано</div>}
-                                        </div>
-                                    </div>
-                                );
-                            }) : (
-                                <div className="px-4 py-12 text-center font-semibold text-[var(--muted)] bg-white">
-                                    Заказов пока нет.
+                        <div className="overflow-x-auto border-2 border-[var(--line)] bg-white">
+                            <div className="min-w-[850px]">
+                                {/* ДОБАВЛЕНА КОЛОНКА "ИНФО" */}
+                                <div className="grid grid-cols-[80px_1fr_1.5fr_1fr_1.2fr_60px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+                                    <span>ID</span>
+                                    <span>Дата</span>
+                                    <span>Клиент</span>
+                                    <span>Сумма</span>
+                                    <span>Статус</span>
+                                    <span className="text-center">Инфо</span>
                                 </div>
-                            )}
+
+                                {orders.length > 0 ? orders.map(order => {
+                                    const isLocked = order.status === 'Completed' || order.status === 'Cancelled';
+                                    return (
+                                        <div key={order.orderID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 grid-cols-[80px_1fr_1.5fr_1fr_1.2fr_60px] items-center hover:bg-gray-50 transition-colors">
+                                            <div className="font-black text-lg truncate">#{order.orderID}</div>
+                                            <div className="text-sm font-semibold text-[var(--muted)] truncate">{new Date(order.orderDate).toLocaleDateString('ru-RU')}</div>
+                                            <div className="min-w-0">
+                                                <div className="font-bold truncate">{order.customerName}</div>
+                                                <div className="text-sm text-[var(--muted)] mt-1 truncate">{order.customerPhone}</div>
+                                            </div>
+                                            <div className="font-black tabular-nums truncate">{formatPrice(order.totalAmount)} ₽</div>
+                                            <div>
+                                                <select
+                                                    value={order.status}
+                                                    onChange={(e) => void handleStatusChange(order.orderID, e.target.value)}
+                                                    disabled={isLocked}
+                                                    className={`w-full border-2 px-3 py-3 font-bold outline-none cursor-pointer transition-colors ${
+                                                        isLocked
+                                                            ? 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                            : 'border-[var(--line)] bg-white hover:bg-gray-50 focus:border-[var(--coral)]'
+                                                    }`}
+                                                >
+                                                    <option value="Pending">В ожидании</option>
+                                                    <option value="Processing">В сборке</option>
+                                                    <option value="Shipped">В пути</option>
+                                                    <option value="Completed">Выполнен</option>
+                                                    <option value="Cancelled">Отменен</option>
+                                                </select>
+                                                {isLocked && <div className="mt-2 flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-red-600 truncate"><AlertCircle size={14}/> Заблокировано</div>}
+                                            </div>
+                                            {/* ДОБАВЛЕНА КНОПКА ГЛАЗА */}
+                                            <div className="flex justify-center">
+                                                <button
+                                                    onClick={() => void handleViewOrderDetails(order.orderID)}
+                                                    className="grid h-10 w-10 place-items-center bg-[var(--paper-soft)] border-2 border-[var(--line)] hover:bg-[var(--sun)] transition-colors"
+                                                    title="Посмотреть детали заказа"
+                                                >
+                                                    {detailsLoading && viewingOrder?.orderID === order.orderID ? <RefreshCcw size={18} className="animate-spin" /> : <Eye size={18} />}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                }) : (
+                                    <div className="px-4 py-12 text-center font-semibold text-[var(--muted)] bg-white">
+                                        Заказов пока нет.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </section>
@@ -634,7 +698,7 @@ export default function Admin() {
             ) : activeTab === 'catalog' ? (
                 // ВКЛАДКА: КАТАЛОГ
                 <div className="space-y-10">
-                    <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                    <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 sm:p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex items-center gap-3">
                             <Plus className="h-7 w-7 text-[var(--coral)]" />
                             <div>
@@ -655,7 +719,7 @@ export default function Admin() {
                         />
                     </section>
 
-                    <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                    <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 sm:p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                             <div>
                                 <h2 className="display-font text-4xl leading-none">Текущий каталог</h2>
@@ -672,55 +736,79 @@ export default function Admin() {
                             </label>
                         </div>
 
-                        <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
-                            <div className="hidden grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
-                                <span>Альбом</span>
-                                <span>Артист</span>
-                                <span>Жанр</span>
-                                <span>Год</span>
-                                <span>Цена</span>
-                                <span>Остаток</span>
-                                <span className="text-right">Действия</span>
+                        <div className="overflow-x-auto border-2 border-[var(--line)] bg-white">
+                            <div className="min-w-[1000px]">
+                                <div className="grid grid-cols-[2fr_1.2fr_1fr_80px_100px_160px_100px] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+                                    <span>Альбом</span>
+                                    <span>Артист</span>
+                                    <span>Жанр</span>
+                                    <span>Год</span>
+                                    <span>Цена</span>
+                                    <span>Склад (+пополнение)</span>
+                                    <span className="text-right">Действия</span>
+                                </div>
+
+                                {filteredAlbums.length > 0 ? filteredAlbums.map(album => (
+                                    <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 grid-cols-[2fr_1.2fr_1fr_80px_100px_160px_100px] items-center hover:bg-gray-50 transition-colors">
+                                        <div className="min-w-0 pr-2">
+                                            <div className="font-black truncate" title={album.title}>{album.title}</div>
+                                            <div className="mt-1 text-xs text-[var(--muted)] truncate" title={album.description}>{album.description || 'Без описания'}</div>
+                                        </div>
+                                        <div className="text-sm font-semibold truncate" title={album.artist?.name}>{album.artist?.name || 'Не указан'}</div>
+                                        <div className="text-sm font-semibold truncate" title={album.genre?.name}>{album.genre?.name || 'Не указан'}</div>
+                                        <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
+                                        <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
+
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>
+                                                {album.stockQuantity} шт.
+                                            </div>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    placeholder="+шт"
+                                                    value={addStockInputs[album.albumID] || ''}
+                                                    onChange={e => setAddStockInputs(prev => ({...prev, [album.albumID]: e.target.value}))}
+                                                    className="w-14 border-2 border-r-0 border-[var(--line)] px-1.5 py-1 text-xs font-bold outline-none focus:bg-[var(--sun)]/20"
+                                                />
+                                                <button
+                                                    onClick={() => void handleAddStock(album.albumID)}
+                                                    className="flex h-[26px] items-center bg-[var(--sun)] border-2 border-[var(--line)] px-2 hover:bg-[#e5b32e] transition-colors"
+                                                    title="Прибавить к остатку"
+                                                >
+                                                    <Plus className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-gray-100 transition-colors" title="Полное редактирование">
+                                                <Edit className="h-4 w-4" />
+                                            </button>
+                                            <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="px-4 py-8 text-center font-semibold text-[var(--muted)]">
+                                        По текущему фильтру ничего не найдено.
+                                    </div>
+                                )}
                             </div>
-
-                            {filteredAlbums.length > 0 ? filteredAlbums.map(album => (
-                                <div key={album.albumID} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[2.4fr_1.4fr_1fr_0.8fr_1fr_0.9fr_120px] md:items-center hover:bg-gray-50 transition-colors">
-                                    <div>
-                                        <div className="font-black">{album.title}</div>
-                                        <div className="mt-1 text-sm text-[var(--muted)] line-clamp-2">{album.description || 'Без описания'}</div>
-                                    </div>
-                                    <div className="text-sm font-semibold">{album.artist?.name || 'Не указан'}</div>
-                                    <div className="text-sm font-semibold">{album.genre?.name || 'Не указан'}</div>
-                                    <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
-                                    <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
-                                    <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>{album.stockQuantity} шт.</div>
-
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-[var(--sun)] transition-colors" title="Полное редактирование">
-                                            <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button onClick={() => setPendingDeleteAlbum(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-red-100 text-red-700 hover:bg-red-200 transition-colors" title="Удалить">
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )) : (
-                                <div className="px-4 py-8 text-center font-semibold text-[var(--muted)]">
-                                    По текущему фильтру ничего не найдено.
-                                </div>
-                            )}
                         </div>
                     </section>
                 </div>
             ) : (
                 // ВКЛАДКА: ИМПОРТ ДАННЫХ
                 <div className="space-y-8">
-                    <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                    <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 sm:p-6 poster-border-sm md:p-8">
                         <div className="mb-6 flex items-center gap-3">
                             <Upload className="h-7 w-7 text-[var(--coral)]" />
                             <div>
                                 <h2 className="display-font text-4xl leading-none">Импорт из файла</h2>
-                                <p className="mt-2 text-[var(--muted)]">Поддерживаются `CSV` и `JSON` с колонками `title`, `artistName`, `genreName`, `releaseYear`, `price`, `stockQuantity`, `description`, `imageURL`.</p>
+                                <p className="mt-2 text-[var(--muted)]">Поддерживаются `CSV` и `JSON`.</p>
                             </div>
                         </div>
 
@@ -731,54 +819,41 @@ export default function Admin() {
                                         <FileText className="mx-auto h-10 w-10 text-[var(--coral)]" />
                                         <div className="mt-4 font-black uppercase tracking-[0.14em]">Выбрать CSV или JSON файл</div>
                                         <div className="mt-2 text-sm text-[var(--muted)]">Можно повторно загружать файл после правок.</div>
-                                        {importFileName && <div className="mt-4 text-sm font-bold text-[var(--blue)] bg-blue-50 py-2 border-2 border-blue-200">{importFileName}</div>}
+                                        {importFileName && <div className="mt-4 text-sm font-bold text-[var(--blue)] bg-blue-50 py-2 border-2 border-blue-200 truncate">{importFileName}</div>}
                                     </div>
                                     <input type="file" accept=".csv,.json,application/json,text/csv" className="hidden" onChange={event => void handleImportFileChange(event)} />
                                 </label>
 
                                 <div className="grid gap-3 md:grid-cols-3">
                                     <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
-                                        <input type="checkbox" checked={importOptions.updateExisting} onChange={event => setImportOptions(previous => ({ ...previous, updateExisting: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
-                                        <span>Обновлять существующие альбомы</span>
+                                        <input type="checkbox" checked={importOptions.updateExisting} onChange={event => setImportOptions(previous => ({ ...previous, updateExisting: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)] flex-shrink-0" />
+                                        <span className="text-sm">Обновлять существующие</span>
                                     </label>
                                     <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
-                                        <input type="checkbox" checked={importOptions.createMissingArtists} onChange={event => setImportOptions(previous => ({ ...previous, createMissingArtists: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
-                                        <span>Создавать новых артистов</span>
+                                        <input type="checkbox" checked={importOptions.createMissingArtists} onChange={event => setImportOptions(previous => ({ ...previous, createMissingArtists: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)] flex-shrink-0" />
+                                        <span className="text-sm">Создавать новых артистов</span>
                                     </label>
                                     <label className="flex items-start gap-3 border-2 border-[var(--line)] bg-white p-4 font-semibold cursor-pointer">
-                                        <input type="checkbox" checked={importOptions.createMissingGenres} onChange={event => setImportOptions(previous => ({ ...previous, createMissingGenres: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)]" />
-                                        <span>Создавать новые жанры</span>
+                                        <input type="checkbox" checked={importOptions.createMissingGenres} onChange={event => setImportOptions(previous => ({ ...previous, createMissingGenres: event.target.checked }))} className="mt-1 h-4 w-4 accent-[var(--coral)] flex-shrink-0" />
+                                        <span className="text-sm">Создавать новые жанры</span>
                                     </label>
                                 </div>
 
-                                <button onClick={() => void handleImportAlbums()} disabled={importLoading || importRows.length === 0} className="inline-flex items-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-4 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-gray-800 transition-colors">
+                                <button onClick={() => void handleImportAlbums()} disabled={importLoading || importRows.length === 0} className="inline-flex w-full sm:w-auto justify-center items-center gap-3 border-2 border-[var(--line)] bg-[var(--ink)] px-6 py-4 font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-gray-800 transition-colors">
                                     <Upload className="h-5 w-5" />
                                     {importLoading ? 'Импортируем...' : 'Запустить импорт'}
                                 </button>
                             </div>
 
-                            <div className="border-2 border-[var(--line)] bg-white p-5">
+                            <div className="border-2 border-[var(--line)] bg-white p-5 overflow-x-auto">
                                 <div className="text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Пример CSV</div>
-                                <pre className="mt-4 overflow-auto text-sm leading-6 text-[var(--muted)]">{`title,artistName,genreName,releaseYear,price,stockQuantity,description,imageURL
-Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.com/rumours.jpg`}</pre>
-
-                                <div className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-[var(--muted)]">Пример JSON</div>
-                                <pre className="mt-4 overflow-auto text-sm leading-6 text-[var(--muted)]">{`[
-  {
-    "title": "Kind of Blue",
-    "artistName": "Miles Davis",
-    "genreName": "Jazz",
-    "releaseYear": 1959,
-    "price": 3290,
-    "stockQuantity": 6
-  }
-]`}</pre>
+                                <pre className="mt-4 text-sm leading-6 text-[var(--muted)]">{`title,artistName,genreName...`}</pre>
                             </div>
                         </div>
                     </section>
 
                     {importRows.length > 0 && (
-                        <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                        <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 sm:p-6 poster-border-sm md:p-8">
                             <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                 <div>
                                     <h3 className="display-font text-4xl leading-none">Предпросмотр</h3>
@@ -791,45 +866,34 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                                 )}
                             </div>
 
-                            <div className="overflow-hidden border-2 border-[var(--line)] bg-white">
-                                <div className="hidden grid-cols-[80px_2fr_1.4fr_1fr_0.8fr_0.8fr] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)] md:grid">
-                                    <span>Строка</span>
-                                    <span>Альбом</span>
-                                    <span>Артист</span>
-                                    <span>Жанр</span>
-                                    <span>Цена</span>
-                                    <span>Склад</span>
-                                </div>
-
-                                {importRows.slice(0, 8).map(row => (
-                                    <div key={row.rowNumber} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 md:grid-cols-[80px_2fr_1.4fr_1fr_0.8fr_0.8fr]">
-                                        <span className="font-black">{row.rowNumber}</span>
-                                        <span>{row.title || '—'}</span>
-                                        <span>{row.artistName || (row.artistID ? `ID ${row.artistID}` : '—')}</span>
-                                        <span>{row.genreName || (row.genreID ? `ID ${row.genreID}` : '—')}</span>
-                                        <span>{row.price || '—'}</span>
-                                        <span>{row.stockQuantity || '—'}</span>
+                            <div className="overflow-x-auto border-2 border-[var(--line)] bg-white">
+                                <div className="min-w-[900px]">
+                                    <div className="grid grid-cols-[80px_2fr_1.4fr_1fr_0.8fr_0.8fr] border-b-2 border-[var(--line)] bg-[var(--paper-soft)] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+                                        <span>Строка</span>
+                                        <span>Альбом</span>
+                                        <span>Артист</span>
+                                        <span>Жанр</span>
+                                        <span>Цена</span>
+                                        <span>Склад</span>
                                     </div>
-                                ))}
+
+                                    {importRows.slice(0, 8).map(row => (
+                                        <div key={row.rowNumber} className="grid gap-3 border-b border-[var(--line)] px-4 py-4 grid-cols-[80px_2fr_1.4fr_1fr_0.8fr_0.8fr] items-center">
+                                            <span className="font-black">{row.rowNumber}</span>
+                                            <span className="truncate" title={row.title}>{row.title || '—'}</span>
+                                            <span className="truncate">{row.artistName || (row.artistID ? `ID ${row.artistID}` : '—')}</span>
+                                            <span className="truncate">{row.genreName || (row.genreID ? `ID ${row.genreID}` : '—')}</span>
+                                            <span>{row.price || '—'}</span>
+                                            <span>{row.stockQuantity || '—'}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-
-                            {importValidationErrors.length > 0 && (
-                                <div className="mt-6 space-y-3">
-                                    <div className="text-xs font-black uppercase tracking-[0.18em] text-red-700">Ошибки файла</div>
-                                    <div className="space-y-2">
-                                        {importValidationErrors.map((error, index) => (
-                                            <div key={`${error.rowNumber}-${index}`} className="border-2 border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                                                Строка {error.rowNumber}: {error.message}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </section>
                     )}
 
                     {importResult && (
-                        <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-6 poster-border-sm md:p-8">
+                        <section className="border-2 border-[var(--line)] bg-[var(--paper-soft)] p-4 sm:p-6 poster-border-sm md:p-8 mt-8">
                             <div className="mb-6 flex flex-wrap gap-3">
                                 <div className="border-2 border-[var(--line)] bg-white px-5 py-4">
                                     <div className="display-font text-4xl leading-none">{importResult.received}</div>
@@ -865,14 +929,109 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                 </div>
             )}
 
+            {/* ДОБАВЛЕНО: МОДАЛЬНОЕ ОКНО ПРОСМОТРА ИНФОРМАЦИИ О ЗАКАЗЕ */}
+            {viewingOrder && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="w-full max-w-2xl bg-[var(--paper-soft)] border-4 border-[var(--ink)] shadow-[12px_12px_0px_0px_var(--ink)] overflow-hidden relative">
+                        {/* Шапка модалки */}
+                        <div className="bg-[var(--ink)] text-white p-5 flex justify-between items-center">
+                            <div>
+                                <h3 className="display-font text-3xl">Заказ #{viewingOrder.orderID}</h3>
+                                <p className="text-xs font-bold opacity-70 uppercase tracking-widest">
+                                    от {new Date(viewingOrder.orderDate).toLocaleString('ru-RU')}
+                                </p>
+                            </div>
+                            <button onClick={() => setViewingOrder(null)} className="hover:rotate-90 transition-transform">
+                                <X size={32} />
+                            </button>
+                        </div>
+
+                        {/* Контент модалки */}
+                        <div className="p-6 md:p-8 space-y-8 max-h-[75vh] overflow-y-auto">
+                            {/* Блок клиента */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-[var(--coral)] font-black uppercase text-xs">
+                                        <User size={16} /> Покупатель
+                                    </div>
+                                    <p className="font-black text-xl leading-tight">{viewingOrder.customerName}</p>
+                                    <p className="font-bold text-[var(--muted)]">{viewingOrder.customerPhone}</p>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-[var(--coral)] font-black uppercase text-xs">
+                                        <MapPin size={16} /> Адрес доставки
+                                    </div>
+                                    <p className="font-bold leading-relaxed">{viewingOrder.deliveryAddress || 'Не указан'}</p>
+                                </div>
+                            </div>
+
+                            {/* Способ оплаты и статус */}
+                            <div className="flex flex-wrap gap-8 border-y-2 border-[var(--line)] py-5">
+                                <div>
+                                    <div className="text-[var(--muted)] font-black uppercase text-[10px] mb-1">Оплата</div>
+                                    <div className="flex items-center gap-2 font-bold">
+                                        <CreditCard size={16} /> {viewingOrder.paymentMethod === 'card' ? 'Карта онлайн' : 'Наличные/СБП'}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-[var(--muted)] font-black uppercase text-[10px] mb-1">Текущий статус</div>
+                                    <span className="bg-[var(--sun)] px-3 py-1 font-black text-sm border-2 border-[var(--line)]">
+                                        {viewingOrder.status}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Блок подарка */}
+                            {viewingOrder.isGift && (
+                                <div className="bg-white border-2 border-[var(--coral)] p-5 relative overflow-hidden">
+                                    <div className="absolute -right-2 -top-2 opacity-10 rotate-12">
+                                        <GiftIcon size={80} />
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[var(--coral)] font-black uppercase text-xs mb-3">
+                                        <GiftIcon size={16} /> Это подарок!
+                                    </div>
+                                    <div className="space-y-2 relative z-10">
+                                        <p className="text-sm"><strong>Кому:</strong> {viewingOrder.giftRecipientName} ({viewingOrder.giftRecipientEmail})</p>
+                                        <p className="text-sm"><strong>От кого:</strong> {viewingOrder.giftFromName}</p>
+                                        <div className="mt-3 p-3 bg-red-50 border-l-4 border-[var(--coral)] italic text-sm">
+                                            "{viewingOrder.giftMessage}"
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Состав заказа */}
+                            <div className="space-y-4">
+                                <div className="text-[var(--muted)] font-black uppercase text-[10px]">Состав заказа</div>
+                                <div className="space-y-3">
+                                    {viewingOrder.items?.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between items-center border-b border-dashed border-[var(--line)] pb-2">
+                                            <div>
+                                                <p className="font-black text-lg">{item.album.title}</p>
+                                                <p className="text-xs font-bold text-[var(--muted)]">Количество: {item.quantity} шт.</p>
+                                            </div>
+                                            <p className="font-black">{formatPrice(item.priceAtPurchase * item.quantity)} ₽</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-between pt-4 border-t-2 border-[var(--ink)]">
+                                    <span className="font-black uppercase">Итоговая сумма</span>
+                                    <span className="display-font text-3xl text-[var(--coral)]">{formatPrice(viewingOrder.totalAmount)} ₽</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ АЛЬБОМА */}
             {editingAlbum && editForm && (
-                <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm">
-                    <div className="max-h-[92vh] w-full max-w-4xl overflow-auto bg-[var(--paper-soft)] p-6 poster-border md:p-8 relative border-2 border-[var(--line)]">
-                        <div className="mb-6 flex items-center justify-between gap-4 border-b-2 border-[var(--line)] pb-4">
+                <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-4 sm:p-6 backdrop-blur-sm">
+                    <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto bg-[var(--paper-soft)] p-5 sm:p-6 poster-border md:p-8 relative border-2 border-[var(--line)]">
+                        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[var(--line)] pb-4">
                             <div>
                                 <div className="text-xs font-black uppercase tracking-[0.18em] text-[var(--coral)]">Редактирование</div>
-                                <h2 className="display-font mt-2 text-5xl leading-none">Изменить альбом</h2>
+                                <h2 className="display-font mt-2 text-4xl sm:text-5xl leading-none">Изменить альбом</h2>
                             </div>
                             <button onClick={() => setEditingAlbum(null)} className="border-2 border-[var(--line)] bg-white px-4 py-3 font-black uppercase tracking-[0.12em] hover:bg-gray-100 transition-colors">
                                 Закрыть
@@ -894,7 +1053,6 @@ Rumours,Fleetwood Mac,Rock,1977,3590,8,Classic soft rock album,https://example.c
                 </div>
             )}
 
-            {/* ДИАЛОГ УДАЛЕНИЯ АЛЬБОМА */}
             <ConfirmDialog
                 open={Boolean(pendingDeleteAlbum)}
                 title="Удалить альбом?"

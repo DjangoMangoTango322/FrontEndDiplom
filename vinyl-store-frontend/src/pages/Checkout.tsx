@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Gift, Truck, AlertCircle } from 'lucide-react';
 import { AddressSuggestions } from 'react-dadata';
@@ -55,7 +55,7 @@ export default function Checkout() {
         const hasDigits = /\d/;
 
         // 1. Имя и Фамилия (строгая проверка на 2 слова)
-        const nameParts = form.name.trim().split(/\s+/); // Разбиваем по пробелам
+        const nameParts = form.name.trim().split(/\s+/);
 
         if (!form.name.trim()) {
             newErrors.name = 'Укажите ваше имя и фамилию';
@@ -80,9 +80,9 @@ export default function Checkout() {
 
         // 4. Подарок
         if (form.isGift) {
-            // Имя получателя (здесь разрешаем 1 слово)
+            // Имя получателя
             if (!form.giftRecipientName.trim()) {
-                newErrors.giftRecipientName = 'Укажите, кому достанется подарок';
+                newErrors.giftRecipientName = 'Укажите имя получателя';
             } else if (hasDigits.test(form.giftRecipientName)) {
                 newErrors.giftRecipientName = 'Имя не может содержать цифры';
             }
@@ -94,13 +94,17 @@ export default function Checkout() {
             }
 
             // От кого
-            if (form.giftFromName.trim() && hasDigits.test(form.giftFromName)) {
+            if (!form.giftFromName.trim()) {
+                newErrors.giftFromName = 'Укажите, от кого подарок';
+            } else if (hasDigits.test(form.giftFromName)) {
                 newErrors.giftFromName = 'Имя отправителя не может содержать цифры';
             }
 
             // Сообщение
-            if (form.giftMessage.trim() && hasDigits.test(form.giftMessage)) {
-                newErrors.giftMessage = 'Сообщение не может содержать цифры';
+            if (!form.giftMessage.trim()) {
+                newErrors.giftMessage = 'Напишите хотя бы короткое пожелание';
+            } else if (form.giftMessage.trim().length < 5) {
+                newErrors.giftMessage = 'Сообщение слишком короткое';
             }
         }
 
@@ -136,7 +140,7 @@ export default function Checkout() {
 
         try {
             const payload = {
-                name: form.name.trim(), // Убираем лишние пробелы по краям перед отправкой
+                name: form.name.trim(),
                 phone: form.phone,
                 address: form.address,
                 paymentMethod: form.paymentMethod,
@@ -351,7 +355,7 @@ export default function Checkout() {
 
                                     <div className="md:col-span-2">
                                         <input
-                                            placeholder="От кого"
+                                            placeholder="От кого *"
                                             value={form.giftFromName}
                                             onChange={event => { setForm({ ...form, giftFromName: event.target.value }); clearError('giftFromName'); }}
                                             className={`w-full border-2 bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20 ${errors.giftFromName ? 'border-red-500 bg-red-50' : 'border-[var(--line)]'}`}
@@ -361,7 +365,7 @@ export default function Checkout() {
 
                                     <div className="md:col-span-2">
                                         <textarea
-                                            placeholder="Сообщение к подарку"
+                                            placeholder="Сообщение к подарку *"
                                             value={form.giftMessage}
                                             onChange={event => { setForm({ ...form, giftMessage: event.target.value }); clearError('giftMessage'); }}
                                             rows={3}
