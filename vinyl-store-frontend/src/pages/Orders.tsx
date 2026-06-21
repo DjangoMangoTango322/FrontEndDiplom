@@ -5,7 +5,7 @@ import { Calendar, Package, Pencil, Trash2, X } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Toast, { type ToastState } from '../components/Toast';
 
-// 1. Функция для красивого перевода статусов на русский язык
+// Функция для красивого перевода статусов на русский язык
 const getStatusText = (status: string) => {
     switch(status) {
         case 'Pending': return 'В обработке';
@@ -17,14 +17,14 @@ const getStatusText = (status: string) => {
     }
 };
 
-// 2. Функция для подбора правильных цветов под каждый статус заказа
+// Функция для подбора правильных цветов под каждый статус заказа
 const getStatusStyle = (status: string) => {
     switch(status) {
         case 'Pending': return 'bg-amber-50 text-amber-700 border border-amber-200';
-        case 'Processing': return 'bg-blue-50 text-blue-700 border border-blue-200'; // Синий для сборки
-        case 'Shipped': return 'bg-purple-50 text-purple-700 border border-purple-200'; // Фиолетовый для пути
-        case 'Completed': return 'bg-green-50 text-green-700 border border-green-200'; // Зеленый для завершенных
-        case 'Cancelled': return 'bg-red-50 text-red-700 border border-red-200'; // Красный для отмены
+        case 'Processing': return 'bg-blue-50 text-blue-700 border border-blue-200';
+        case 'Shipped': return 'bg-purple-50 text-purple-700 border border-purple-200';
+        case 'Completed': return 'bg-green-50 text-green-700 border border-green-200';
+        case 'Cancelled': return 'bg-red-50 text-red-700 border border-red-200';
         default: return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
 };
@@ -135,10 +135,10 @@ export default function Orders() {
 
     if (loading) {
         return (
-            <div className="max-w-5xl mx-auto px-6 py-20">
-                <div className="poster-border bg-[var(--paper-soft)] p-10">
-                    <div className="w-12 h-12 border-4 border-[var(--line)] border-t-[var(--coral)] rounded-full animate-spin" />
-                    <p className="text-[var(--muted)] mt-4">Загружаем твои заказы...</p>
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20 flex justify-center items-center">
+                <div className="poster-border bg-[var(--paper-soft)] p-8 sm:p-10 text-center w-full max-w-md">
+                    <div className="w-12 h-12 border-4 border-[var(--line)] border-t-[var(--coral)] rounded-full animate-spin mx-auto" />
+                    <p className="text-[var(--muted)] font-bold mt-5">Загружаем твои заказы...</p>
                 </div>
             </div>
         );
@@ -146,13 +146,13 @@ export default function Orders() {
 
     if (orders.length === 0) {
         return (
-            <div className="max-w-2xl mx-auto px-6 py-20 text-center">
-                <div className="text-8xl mb-8 opacity-30">📦</div>
-                <h1 className="display-font text-5xl mb-4 leading-none">У тебя пока нет заказов</h1>
-                <p className="text-xl text-[var(--muted)] mb-10">Самое время сделать первый заказ!</p>
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-20 text-center">
+                <div className="text-7xl sm:text-8xl mb-6 opacity-30">📦</div>
+                <h1 className="display-font text-4xl sm:text-5xl mb-4 leading-none">У тебя пока нет заказов</h1>
+                <p className="text-lg sm:text-xl text-[var(--muted)] mb-8">Самое время сделать первый заказ!</p>
                 <button
                     onClick={() => window.location.href = '/'}
-                    className="px-10 py-4 border-2 border-[var(--line)] bg-[var(--coral)] text-white rounded-2xl font-semibold text-lg transition-all"
+                    className="w-full sm:w-auto px-10 py-4 border-2 border-[var(--line)] bg-[var(--coral)] text-white rounded-2xl font-black uppercase tracking-wider text-base sm:text-lg transition-transform active:scale-95"
                 >
                     Перейти в каталог
                 </button>
@@ -162,29 +162,30 @@ export default function Orders() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-6 py-16">
-            <div className="flex items-center justify-between mb-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+            <div className="flex items-center justify-between mb-8 sm:mb-12">
                 <div>
-                    <h1 className="display-font text-6xl leading-none">Мои заказы</h1>
-                    <p className="text-xl text-[var(--muted)] mt-2">Всего заказов: {orders.length}</p>
+                    <h1 className="display-font text-4xl sm:text-6xl leading-none">Мои заказы</h1>
+                    <p className="text-base sm:text-xl text-[var(--muted)] mt-2 font-semibold">Всего заказов: {orders.length}</p>
                 </div>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
                 {orders.map((order) => (
                     <div
                         key={order.orderID}
-                        className="bg-[var(--paper-soft)] rounded-3xl p-10 border-2 border-[var(--line)] shadow-[0_8px_0_rgba(21,17,15,0.12)]"
+                        className="bg-[var(--paper-soft)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 lg:p-10 border-2 border-[var(--line)] shadow-[0_6px_0_rgba(21,17,15,0.12)] sm:shadow-[0_8px_0_rgba(21,17,15,0.12)]"
                     >
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-[var(--sun)]/30 border-2 border-[var(--line)] rounded-2xl flex items-center justify-center">
-                                    <Package className="w-7 h-7 text-[var(--coral)]" />
+                        {/* Верхняя панель карточки */}
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6 sm:mb-8">
+                            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[var(--sun)]/30 border-2 border-[var(--line)] rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0">
+                                    <Package className="w-6 h-6 sm:w-7 sm:h-7 text-[var(--coral)]" />
                                 </div>
-                                <div>
-                                    <div className="flex items-center gap-3">
-                                        <Calendar className="w-5 h-5 text-[var(--coral)]" />
-                                        <span className="text-xl font-semibold text-[var(--ink)]">
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--coral)] shrink-0" />
+                                        <span className="text-lg sm:text-xl font-bold text-[var(--ink)]">
                                             {new Date(order.orderDate).toLocaleDateString('ru-RU', {
                                                 day: 'numeric',
                                                 month: 'long',
@@ -192,52 +193,55 @@ export default function Orders() {
                                             })}
                                         </span>
                                     </div>
-                                    <div className="text-sm text-[var(--muted)] mt-1">Заказ #{order.orderID}</div>
+                                    <div className="text-xs sm:text-sm font-bold text-[var(--muted)] mt-1">Заказ #{order.orderID}</div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                {/* ИСПРАВЛЕНО: Применяем новые динамические стили отображения статуса */}
-                                <div className={`px-5 py-2 rounded-2xl text-sm font-semibold ${getStatusStyle(order.status)}`}>
-                                    {getStatusText(order.status)}
-                                </div>
+                            {/* Блок статуса, цены и кнопок действий */}
+                            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between lg:justify-end gap-4 w-full lg:w-auto border-t lg:border-t-0 border-dashed border-[var(--line)] pt-4 lg:pt-0">
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className={`px-4 py-1.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider shrink-0 ${getStatusStyle(order.status)}`}>
+                                        {getStatusText(order.status)}
+                                    </div>
 
-                                <div className="text-right">
-                                    <div className="text-4xl font-bold tabular-nums text-[var(--ink)]">{order.totalAmount}</div>
-                                    <div className="text-xs text-[var(--muted)] -mt-1">РУБ</div>
+                                    <div className="text-left sm:text-right">
+                                        <div className="text-2xl sm:text-3xl lg:text-4xl font-black tabular-nums text-[var(--ink)] leading-none">{order.totalAmount.toLocaleString('ru-RU')}</div>
+                                        <div className="text-[10px] sm:text-xs font-black text-[var(--muted)] mt-0.5">РУБ</div>
+                                    </div>
                                 </div>
 
                                 {canManage(order) && (
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 ml-auto sm:ml-0">
                                         <button
                                             onClick={() => openEdit(order)}
-                                            className="p-3 bg-[var(--sun)]/20 border-2 border-[var(--line)] hover:bg-[var(--sun)]/35 rounded-2xl transition-colors"
-                                            title="Редактировать"
+                                            className="p-2.5 sm:p-3 bg-[var(--sun)]/20 border-2 border-[var(--line)] hover:bg-[var(--sun)]/35 rounded-xl sm:rounded-2xl transition-colors"
+                                            title="Редактировать доставку"
                                         >
-                                            <Pencil className="w-5 h-5 text-[var(--ink)]" />
+                                            <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--ink)]" />
                                         </button>
                                         <button
                                             onClick={() => setConfirmDelete(order)}
-                                            className="p-3 bg-red-50 border border-red-200 hover:bg-red-100 rounded-2xl transition-colors"
-                                            title="Удалить"
+                                            className="p-2.5 sm:p-3 bg-red-50 border-2 border-red-200 hover:bg-red-100 rounded-xl sm:rounded-2xl transition-colors"
+                                            title="Удалить / Отменить"
                                         >
-                                            <Trash2 className="w-5 h-5 text-red-700" />
+                                            <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-700" />
                                         </button>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="border-t-2 border-[var(--line)] pt-8">
-                            <div className="text-sm text-[var(--coral)] mb-4 tracking-widest font-semibold">СОСТАВ ЗАКАЗА</div>
-                            <div className="space-y-4">
+                        {/* Состав заказа */}
+                        <div className="border-t-2 border-[var(--line)] pt-5 sm:pt-8">
+                            <div className="text-xs text-[var(--coral)] mb-4 tracking-widest font-black uppercase">СОСТАВ ЗАКАЗА</div>
+                            <div className="space-y-3 sm:space-y-4">
                                 {order.items.map((item, i) => (
-                                    <div key={i} className="flex justify-between items-center text-lg">
-                                        <div className="flex items-center gap-4">
-                                            <span className="font-semibold text-[var(--ink)]">{item.album.title}</span>
-                                            <span className="text-[var(--muted)]">× {item.quantity}</span>
+                                    <div key={i} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 text-base sm:text-lg border-b border-dashed border-[var(--line)]/40 pb-2 last:border-b-0 last:pb-0">
+                                        <div className="flex items-start gap-2 min-w-0">
+                                            <span className="font-bold text-[var(--ink)] break-words pr-1">{item.album.title}</span>
+                                            <span className="text-sm font-black text-[var(--muted)] whitespace-nowrap shrink-0 mt-0.5">× {item.quantity}</span>
                                         </div>
-                                        <div className="font-semibold text-[var(--ink)]">
+                                        <div className="font-black text-[var(--ink)] tabular-nums sm:text-right shrink-0">
                                             {(item.priceAtPurchase * item.quantity).toLocaleString('ru-RU')} ₽
                                         </div>
                                     </div>
@@ -248,106 +252,136 @@ export default function Orders() {
                 ))}
             </div>
 
+            {/* ОПТИМИЗИРОВАННОЕ МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ */}
             {editing && (
-                <div className="fixed inset-0 z-[200] bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
-                    <div className="w-full max-w-2xl bg-[var(--paper-soft)] border-2 border-[var(--line)] rounded-3xl p-8 shadow-xl">
-                        <div className="flex items-start justify-between gap-6">
+                <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+                    <div className="w-full max-w-2xl bg-[var(--paper-soft)] border-2 border-[var(--line)] rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl max-h-[95vh] flex flex-col overflow-hidden">
+                        <div className="flex items-start justify-between gap-4 pb-4 border-b border-dashed border-[var(--line)]">
                             <div>
-                                <div className="text-3xl font-bold text-[var(--ink)]">Редактировать заказ #{editing.orderID}</div>
-                                <div className="text-sm text-[var(--muted)] mt-1">Можно менять только “В обработке”.</div>
+                                <div className="text-xl sm:text-3xl font-black text-[var(--ink)] leading-tight">Редактировать заказ #{editing.orderID}</div>
+                                <div className="text-xs sm:text-sm font-semibold text-[var(--muted)] mt-1">Изменение данных доставки (статус: В обработке).</div>
                             </div>
                             <button
                                 onClick={() => setEditing(null)}
-                                className="p-3 rounded-2xl bg-[var(--sun)]/20 border-2 border-[var(--line)] hover:bg-[var(--sun)]/35 transition-colors"
+                                className="p-2.5 rounded-xl bg-[var(--sun)]/20 border-2 border-[var(--line)] hover:bg-[var(--sun)]/35 transition-colors shrink-0"
                                 title="Закрыть"
                             >
-                                <X className="w-5 h-5 text-[var(--ink)]" />
+                                <X className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--ink)]" />
                             </button>
                         </div>
 
-                        <div className="mt-6 grid md:grid-cols-2 gap-4">
-                            <input
-                                value={form.name}
-                                onChange={e => setForm({ ...form, name: e.target.value })}
-                                placeholder="Имя"
-                                className="w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                            />
-                            <input
-                                value={form.phone}
-                                onChange={e => setForm({ ...form, phone: e.target.value })}
-                                placeholder="Телефон"
-                                className="w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                            />
-                            <input
-                                value={form.address}
-                                onChange={e => setForm({ ...form, address: e.target.value })}
-                                placeholder="Адрес"
-                                className="md:col-span-2 w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                            />
-                            <select
-                                value={form.paymentMethod}
-                                onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
-                                className="w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                            >
-                                <option value="card">Карта</option>
-                                <option value="cash">Наличные</option>
-                                <option value="sbp">СБП</option>
-                            </select>
-                            <label className="flex items-center gap-3 text-[var(--ink)] font-semibold">
+                        {/* Форма со скроллом на мобильных */}
+                        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-1 flex-grow">
+                            <label className="block">
+                                <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Имя получателя</span>
                                 <input
-                                    type="checkbox"
-                                    checked={form.isGift}
-                                    onChange={e => setForm({ ...form, isGift: e.target.checked })}
-                                    className="w-5 h-5"
+                                    value={form.name}
+                                    onChange={e => setForm({ ...form, name: e.target.value })}
+                                    placeholder="Имя Фамилия"
+                                    className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20"
                                 />
-                                Подарок
+                            </label>
+                            <label className="block">
+                                <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Телефон</span>
+                                <input
+                                    value={form.phone}
+                                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                                    placeholder="Контактный телефон"
+                                    className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20"
+                                />
+                            </label>
+                            <label className="block md:col-span-2">
+                                <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Адрес доставки</span>
+                                <input
+                                    value={form.address}
+                                    onChange={e => setForm({ ...form, address: e.target.value })}
+                                    placeholder="Город, улица, дом, квартира"
+                                    className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20"
+                                />
+                            </label>
+                            <label className="block">
+                                <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Способ оплаты</span>
+                                <select
+                                    value={form.paymentMethod}
+                                    onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
+                                    className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20 cursor-pointer"
+                                >
+                                    <option value="card">Карта</option>
+                                    <option value="cash">Наличные</option>
+                                    <option value="sbp">СБП</option>
+                                </select>
                             </label>
 
+                            <div className="flex items-center pt-5 md:pt-6">
+                                <label className="flex items-center gap-3 text-[var(--ink)] font-black uppercase text-xs sm:text-sm tracking-wider cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.isGift}
+                                        onChange={e => setForm({ ...form, isGift: e.target.checked })}
+                                        className="w-5 h-5 accent-[var(--coral)]"
+                                    />
+                                    Заказ в подарок
+                                </label>
+                            </div>
+
                             {form.isGift && (
-                                <>
-                                    <input
-                                        value={form.giftRecipientName}
-                                        onChange={e => setForm({ ...form, giftRecipientName: e.target.value })}
-                                        placeholder="Имя получателя"
-                                        className="w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                                    />
-                                    <input
-                                        value={form.giftRecipientEmail}
-                                        onChange={e => setForm({ ...form, giftRecipientEmail: e.target.value })}
-                                        placeholder="Email получателя"
-                                        className="w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                                    />
-                                    <input
-                                        value={form.giftFromName}
-                                        onChange={e => setForm({ ...form, giftFromName: e.target.value })}
-                                        placeholder="От кого"
-                                        className="w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20"
-                                    />
-                                    <textarea
-                                        value={form.giftMessage}
-                                        onChange={e => setForm({ ...form, giftMessage: e.target.value })}
-                                        placeholder="Сообщение"
-                                        rows={3}
-                                        className="md:col-span-2 w-full bg-white/70 border-2 border-[var(--line)] rounded-2xl px-5 py-4 outline-none focus:bg-[var(--sun)]/20 resize-y"
-                                    />
-                                </>
+                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-dashed border-[var(--line)] pt-4 mt-2">
+                                    <label className="block">
+                                        <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Имя получателя подарка</span>
+                                        <input
+                                            value={form.giftRecipientName}
+                                            onChange={e => setForm({ ...form, giftRecipientName: e.target.value })}
+                                            placeholder="Кому подарок"
+                                            className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20"
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Email получателя</span>
+                                        <input
+                                            value={form.giftRecipientEmail}
+                                            onChange={e => setForm({ ...form, giftRecipientEmail: e.target.value })}
+                                            placeholder="name@example.com"
+                                            className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20"
+                                        />
+                                    </label>
+                                    <label className="block md:col-span-2">
+                                        <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">От кого</span>
+                                        <input
+                                            value={form.giftFromName}
+                                            onChange={e => setForm({ ...form, giftFromName: e.target.value })}
+                                            placeholder="Имя отправителя"
+                                            className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20"
+                                        />
+                                    </label>
+                                    <label className="block md:col-span-2">
+                                        <span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-[var(--muted)]">Поздравительное сообщение</span>
+                                        <textarea
+                                            value={form.giftMessage}
+                                            onChange={e => setForm({ ...form, giftMessage: e.target.value })}
+                                            placeholder="Текст открытки к пластинке..."
+                                            rows={3}
+                                            className="w-full bg-white border-2 border-[var(--line)] rounded-xl px-4 py-3.5 font-bold outline-none focus:bg-[var(--sun)]/20 resize-y"
+                                        />
+                                    </label>
+                                </div>
                             )}
                         </div>
 
-                        <div className="mt-8 flex gap-3">
+                        {/* Кнопки модалки */}
+                        <div className="mt-6 flex flex-col sm:flex-row gap-3 pt-4 border-t border-dashed border-[var(--line)]">
                             <button
                                 onClick={() => setEditing(null)}
-                                className="flex-1 py-4 rounded-2xl border-2 border-[var(--line)] bg-[var(--sun)]/25 hover:bg-[var(--sun)]/35 transition-colors font-semibold text-[var(--ink)]"
+                                className="w-full sm:flex-1 py-4 rounded-xl border-2 border-[var(--line)] bg-[var(--sun)]/25 hover:bg-[var(--sun)]/35 transition-colors font-black uppercase tracking-wider text-xs sm:text-sm text-[var(--ink)]"
                                 disabled={saving}
                             >
                                 Отмена
                             </button>
                             <button
                                 onClick={saveEdit}
-                                className="flex-1 py-4 rounded-2xl border-2 border-[var(--line)] bg-[var(--coral)] text-white font-semibold transition-colors disabled:opacity-60"
+                                className="w-full sm:flex-1 py-4 rounded-xl border-2 border-[var(--line)] bg-[var(--coral)] text-white font-black uppercase tracking-wider text-xs sm:text-sm transition-colors disabled:opacity-60 hover:bg-[#d84a2f]"
                                 disabled={saving}
                             >
-                                {saving ? 'Сохраняем...' : 'Сохранить'}
+                                {saving ? 'Сохраняем...' : 'Сохранить изменения'}
                             </button>
                         </div>
                     </div>

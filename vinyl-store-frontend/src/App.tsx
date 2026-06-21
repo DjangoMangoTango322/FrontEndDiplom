@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react'; // Исправлено TS6133: убрали неиспользуемый React
 import { ArrowUpRight, Disc3, Mail, MapPin, Phone } from 'lucide-react';
-import { Toaster } from 'react-hot-toast'; // <-- Добавили импорт Toaster
+import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './context/FavoritesContext';
@@ -9,9 +9,44 @@ import Navbar from './components/Navbar';
 import VinylBackground from './components/VinylBackground';
 import Catalog from './pages/Catalog';
 import Cart from './pages/Cart';
-
 import Login from './pages/Login';
 import Checkout from './pages/Checkout';
+import * as signalR from '@microsoft/signalr';
+import { toast } from 'react-hot-toast';
+
+export const useNotifications = (token: string | null) => {
+    useEffect(() => {
+        if (!token) return;
+
+        // Настраиваем соединение с сервером
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://vynil.somee.com/hub/notifications", {
+                accessTokenFactory: () => token // Передаем JWT токен для авторизации
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        connection.start()
+            .then(() => {
+                console.log("Connected to SignalR");
+
+                // Исправлено TS7006: явно указали тип для приходящих данных data
+                connection.on("ReceiveOrderStatusUpdate", (data: { message: string }) => {
+                    // Показываем красивое уведомление
+                    toast.success(data.message, {
+                        duration: 5000,
+                        icon: '📦',
+                    });
+                });
+            })
+            // Исправлено TS7006: явно указали тип ошибки err
+            .catch((err: any) => console.error("SignalR Connection Error: ", err));
+
+        return () => {
+            connection.stop();
+        };
+    }, [token]);
+};
 
 const AlbumDetail = lazy(() => import('./pages/AlbumDetail'));
 const Orders = lazy(() => import('./pages/Orders'));
@@ -82,7 +117,6 @@ export default function App() {
             <AuthProvider>
                 <FavoritesProvider>
                     <CartProvider>
-                        {/* Добавляем Toaster здесь, чтобы уведомления работали во всем приложении */}
                         <Toaster position="bottom-right" toastOptions={{ duration: 3000 }} />
 
                         <div className="relative isolate min-h-screen flex flex-col text-[var(--ink)]">
