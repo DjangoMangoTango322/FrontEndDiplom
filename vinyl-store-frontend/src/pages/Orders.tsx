@@ -5,6 +5,30 @@ import { Calendar, Package, Pencil, Trash2, X } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Toast, { type ToastState } from '../components/Toast';
 
+// Функция для красивого перевода статусов на русский язык
+const getStatusText = (status: string) => {
+    switch(status) {
+        case 'Pending': return 'В обработке';
+        case 'Processing': return 'В сборке';
+        case 'Shipped': return 'В пути';
+        case 'Completed': return 'Выполнен';
+        case 'Cancelled': return 'Отменён';
+        default: return status;
+    }
+};
+
+// Функция для подбора правильных цветов статуса
+const getStatusStyle = (status: string) => {
+    switch(status) {
+        case 'Pending': return 'bg-amber-50 text-amber-700 border border-amber-200';
+        case 'Processing': return 'bg-blue-50 text-blue-700 border border-blue-200';
+        case 'Shipped': return 'bg-purple-50 text-purple-700 border border-purple-200';
+        case 'Completed': return 'bg-green-50 text-green-700 border border-green-200';
+        case 'Cancelled': return 'bg-red-50 text-red-700 border border-red-200';
+        default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+    }
+};
+
 export default function Orders() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -173,13 +197,9 @@ export default function Orders() {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <div className={`px-5 py-2 rounded-2xl text-sm font-semibold ${
-                                    order.status === 'Completed' ? 'bg-[var(--sun)]/25 text-[var(--muted)] border-2 border-[var(--line)]' :
-                                        order.status === 'Cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
-                                            'bg-amber-50 text-amber-700 border border-amber-200'
-                                }`}>
-                                    {order.status === 'Pending' ? 'В обработке' :
-                                        order.status === 'Completed' ? 'Выполнен' : 'Отменён'}
+                                {/* ИСПРАВЛЕНО ЗДЕСЬ: Подстановка правильных цветов и текста */}
+                                <div className={`px-5 py-2 rounded-2xl text-sm font-semibold ${getStatusStyle(order.status)}`}>
+                                    {getStatusText(order.status)}
                                 </div>
 
                                 <div className="text-right">
