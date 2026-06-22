@@ -744,7 +744,7 @@ export default function Admin() {
                                     <span>Жанр</span>
                                     <span>Год</span>
                                     <span>Цена</span>
-                                    <span>Склад (+пополнение)</span>
+                                    <span>Склад </span>
                                     <span className="text-right">Действия</span>
                                 </div>
 
@@ -759,28 +759,7 @@ export default function Admin() {
                                         <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
                                         <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
 
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>
-                                                {album.stockQuantity} шт.
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    placeholder="+шт"
-                                                    value={addStockInputs[album.albumID] || ''}
-                                                    onChange={e => setAddStockInputs(prev => ({...prev, [album.albumID]: e.target.value}))}
-                                                    className="w-14 border-2 border-r-0 border-[var(--line)] px-1.5 py-1 text-xs font-bold outline-none focus:bg-[var(--sun)]/20"
-                                                />
-                                                <button
-                                                    onClick={() => void handleAddStock(album.albumID)}
-                                                    className="flex h-[26px] items-center bg-[var(--sun)] border-2 border-[var(--line)] px-2 hover:bg-[#e5b32e] transition-colors"
-                                                    title="Прибавить к остатку"
-                                                >
-                                                    <Plus className="h-3 w-3" />
-                                                </button>
-                                            </div>
-                                        </div>
+                                        
 
                                         <div className="flex justify-end gap-2">
                                             <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-gray-100 transition-colors" title="Полное редактирование">
