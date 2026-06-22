@@ -355,29 +355,7 @@ export default function Admin() {
         });
     };
 
-    const handleAddStock = async (albumId: number) => {
-        const val = parseInt(addStockInputs[albumId] || '0', 10);
-
-        if (isNaN(val) || val <= 0) {
-            showToast('error', 'Ошибка', 'Введите корректное число дисков для добавления.');
-            return;
-        }
-
-        try {
-            const response = await api.patch<{message: string, newStockQuantity: number}>(`/albums/${albumId}/add-stock`, {
-                quantityToAdd: val
-            });
-
-            setAlbums(prev => prev.map(a =>
-                a.albumID === albumId ? { ...a, stockQuantity: response.data.newStockQuantity } : a
-            ));
-
-            setAddStockInputs(prev => ({ ...prev, [albumId]: '' }));
-            showToast('success', 'Остаток пополнен', response.data.message);
-        } catch (error) {
-            showToast('error', 'Не удалось пополнить', 'Произошла ошибка при обновлении базы данных.');
-        }
-    };
+    
 
     const handleCreateAlbum = async (event: React.FormEvent) => {
         event.preventDefault();
