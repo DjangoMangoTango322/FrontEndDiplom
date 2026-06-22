@@ -110,7 +110,6 @@ type AlbumFormFieldsProps = {
     submitText: string;
     loading: boolean;
     onSubmit: (event: React.FormEvent) => void;
-    originalStock?: number;
 };
 
 function AlbumFormFields({
@@ -122,7 +121,6 @@ function AlbumFormFields({
                              submitText,
                              loading,
                              onSubmit,
-                             originalStock
                          }: AlbumFormFieldsProps) {
     const inputClass = 'w-full border-2 border-[var(--line)] bg-white px-5 py-4 font-bold outline-none focus:bg-[var(--sun)]/20';
 
@@ -999,7 +997,6 @@ export default function Admin() {
                             onSubmit={handleUpdateAlbum}
                             submitText="Сохранить изменения"
                             loading={editLoading}
-                            originalStock={editingAlbum.stockQuantity}
                         />
                     </div>
                 </div>
