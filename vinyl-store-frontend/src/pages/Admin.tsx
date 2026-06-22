@@ -759,7 +759,12 @@ export default function Admin() {
                                         <div className="text-sm font-semibold">{album.releaseYear || '—'}</div>
                                         <div className="font-black tabular-nums">{album.price.toLocaleString('ru-RU')} ₽</div>
 
-                                        
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className={`text-sm font-bold ${album.stockQuantity === 0 ? 'text-red-600' : 'text-green-700'}`}>
+                                                {album.stockQuantity} шт.
+                                            </div>
+                                            
+                                        </div>
 
                                         <div className="flex justify-end gap-2">
                                             <button onClick={() => openEditModal(album)} className="grid h-10 w-10 place-items-center border-2 border-[var(--line)] bg-[var(--paper-soft)] hover:bg-gray-100 transition-colors" title="Полное редактирование">
